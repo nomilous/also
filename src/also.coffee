@@ -1,1 +1,3 @@
-module.exports = (fn) -> fn.apply null, arguments
+module.exports = 
+
+    injectors: require './injectors'
