@@ -1,15 +1,12 @@
 require('nez').realize 'Inject', (inject, test, context) -> 
 
-    context 'flat( signatureFn, fn )', (it) -> 
+    context 'sync( signatureFn, fn )', (it) -> 
 
         it 'injects arguments via flat callback', (done) -> 
 
-            decoratedFn = inject.flat(
+            decoratedFn = inject.sync(
 
-                (signature) -> 
-
-                    signature.should.eql ['arg1', 'arg2', 'arg3']
-                    signature
+                (signature) -> signature
 
                 (arg1, arg2, arg3) -> 
 
@@ -28,14 +25,14 @@ require('nez').realize 'Inject', (inject, test, context) ->
 
         it 'enables interesting things', (ok) -> 
 
-            flat   = inject.flat
+            sync   = inject.sync
             loader = (args) -> 
                 for arg in args
                     require arg
             
             Jungle = { 
 
-                frog: flat loader, (crypto, zlib, net) -> 
+                frog: sync loader, (crypto, zlib, net) -> 
 
                     sum = crypto.createHash 'sha1'
                     sum.update 'amicus curiae'
@@ -50,4 +47,26 @@ require('nez').realize 'Inject', (inject, test, context) ->
 
             Jungle.frog()
 
+
+    context 'async( signatureFn, fn )', (it) -> 
+
+        it 'enables asyncronous injection', (good) -> 
+
+
+            loader = (args, callback) -> 
+                callback null, ( for arg in args
+                    require arg )
+                  
+
+            Noontide = {
+
+                orb: inject.async loader, (error, os, fs) ->
+
+                    os.should.equal require 'os' 
+                    fs.should.equal require 'fs'
+                    test good
+
+            }
+
+            Noontide.orb()
 
