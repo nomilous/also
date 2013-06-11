@@ -72,7 +72,7 @@ require('nez').realize 'Inject', (inject, test, context) ->
 
 
 
-        it 'enables interesting things', (done) -> 
+        it 'enables interesting things', (done) -> ->
 
 
             gitUser = (args, callback) -> 
