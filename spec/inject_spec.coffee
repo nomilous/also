@@ -1,10 +1,10 @@
-require('nez').realize 'Injectors', (Injectors, test, context) -> 
+require('nez').realize 'Inject', (inject, test, context) -> 
 
     context 'flat( signatureFn, fn )', (it) -> 
 
         it 'injects arguments via flat callback', (done) -> 
 
-            decoratedFn = Injectors.flat(
+            decoratedFn = inject.flat(
 
                 (signature) -> 
 
@@ -28,7 +28,7 @@ require('nez').realize 'Injectors', (Injectors, test, context) ->
 
         it 'enables interesting things', (ok) -> 
 
-            flat   = Injectors.flat
+            flat   = inject.flat
             loader = (args) -> 
                 for arg in args
                     require arg

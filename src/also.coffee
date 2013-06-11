@@ -1,3 +1,3 @@
 module.exports = 
 
-    injectors: require './injectors'
+    inject: require './inject'

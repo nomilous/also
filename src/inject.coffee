@@ -4,7 +4,7 @@ module.exports =
 
     
     #
-    # injectors.flat signatureFn, (arg,uments) ->
+    # inject.flat signatureFn, (arg,uments) ->
     # -------------------------------------------
     # 
     # * First calls signatureFn with the arg,ument 
