@@ -4,7 +4,7 @@ module.exports =
 
     
     #
-    # injectors.flat singatureFn, (arg,uments) ->
+    # injectors.flat signatureFn, (arg,uments) ->
     # -------------------------------------------
     # 
     # * First calls signatureFn with the arg,ument 
@@ -14,7 +14,7 @@ module.exports =
     #   returns of signatureFn injected as the args
     # 
 
-    flat: (singatureFn, fn) -> ->
+    flat: (signatureFn, fn) -> ->
 
-        fn.apply null, singatureFn argsOf fn
+        fn.apply null, signatureFn argsOf fn
 
