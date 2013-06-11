@@ -8,7 +8,7 @@ module.exports =
 
         )[1].replace(
 
-            /\s/,''
+            /\s/g,''
 
         ).split(',').filter( (arg) -> 
 

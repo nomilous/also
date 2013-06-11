@@ -1,3 +1,5 @@
+argsOf         = require('./util').argsOf 
+
 module.exports = 
 
     
@@ -13,4 +15,6 @@ module.exports =
     # 
 
     flat: (singatureFn, fn) -> ->
+
+        fn.apply null, singatureFn argsOf fn
 
