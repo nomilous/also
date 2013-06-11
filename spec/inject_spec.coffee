@@ -70,3 +70,40 @@ require('nez').realize 'Inject', (inject, test, context) ->
 
             Noontide.orb()
 
+
+
+        it 'enables interesting things', (done) -> 
+
+
+            gitUser = (args, callback) -> 
+
+                body    = ''
+                https   = require 'https'
+                options = 
+
+                    hostname: 'api.github.com'
+                    port:     443
+                    path:     "/users/#{  args[0]  }"
+                    method:   'GET'
+                    headers:  'User-Agent': 'Mozilla/5.0'
+  
+                req = https.request options, (res) -> 
+
+                    res.on 'data', (data) -> body += data.toString()
+                    res.on 'end', -> callback null, JSON.parse body
+
+                req.end()
+
+
+
+            January = {
+
+                odometer: inject.async gitUser, (error, nomilous) -> 
+
+                    nomilous.location.should.equal ''
+                    test done
+
+            }
+
+            January.odometer()
+
