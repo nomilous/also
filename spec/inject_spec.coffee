@@ -126,25 +126,34 @@ require('nez').realize 'Inject', (inject, test, context) ->
 
 
 
+
     context 'Preparator (decorator config)', (it) -> 
 
-        it 'appropriately calls beforeAll and beforeEach', (done) -> 
+
+        it 'appropriately calls beforeAll and beforeEach', (passed) -> 
 
             ducks     = 0
             ducklings = 0
             quark     = inject.sync(
 
+                #
+                # before the decorated function
+                #
                 beforeAll:  -> ducks++
                 beforeEach: -> ducklings++
+
+                #
+                # the decorated function
+                #
                 ->
+                    ducks.should.equal 1  
+                    if ducklings > 7 then test passed # 8th()
 
             )
 
-            quark quark quark quark quark quark quark()
+            quark quark quark quark quark quark quark quark()
 
-            ducks.should.equal     1
-            ducklings.should.equal 7
-            test done
+
 
 
     context 'async( signatureFn, fn )', (it) -> ->
