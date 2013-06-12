@@ -20,6 +20,12 @@ exports.sync = (Preparator, decoratedFn) ->
         #
         # * A function is returned. (It pretends to be the `decoratedFn`)
         # 
+        # TODO
+        # ----
+        # 
+        # * Consider taking the context out the back door. 
+        #   (  As a property of this returned function  )
+        # 
 
         return ->  
 
