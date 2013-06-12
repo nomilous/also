@@ -17,7 +17,10 @@ argsOf = require('./util').argsOf
 
 exports.sync = (signatureFn, fn) -> ->
 
-    fn.apply null, signatureFn argsOf fn
+    injected = signatureFn argsOf fn
+    injected.push arg for arg in arguments
+    fn.apply null, injected
+
 
 #
 # Asyncronous Injection
@@ -32,11 +35,12 @@ exports.sync = (signatureFn, fn) -> ->
 
 exports.async = (signatureFn, fn) -> ->
 
+    original  = 
+        for arg in arguments
+            arg
     
     signatureFn argsOf(fn)[1..], (error, result) -> 
 
-        fn.apply null, [error].concat result
-
-
+        fn.apply null, [error].concat( result ).concat original
 
 

@@ -48,6 +48,34 @@ require('nez').realize 'Inject', (inject, test, context) ->
             Jungle.frog()
 
 
+        it 'preserves existing arguments', (done) -> 
+
+            Token = {
+
+                flywheel: inject.sync ( 
+
+                    #
+                    # map only the first 2 args
+                    # 
+                    # reason being allowed to pass in from
+                    # the outside
+                    #
+
+                    (args) -> args[..1] 
+
+                ), (one, two, reason) -> 
+
+                    one.should.equal    'one'
+                    two.should.equal    'two'
+
+                    reason.should.equal 'Puncture'
+                    test done
+
+            }
+
+            Token.flywheel 'Puncture'
+
+
     context 'async( signatureFn, fn )', (it) -> 
 
         it 'enables asyncronous injection', (good) -> 
@@ -71,39 +99,19 @@ require('nez').realize 'Inject', (inject, test, context) ->
             Noontide.orb()
 
 
+        it 'preserves original arguments', (done) -> 
 
-        it 'enables interesting things', (done) -> ->
+            Quintessential = {
 
+                iota: inject.async ( 
 
-            gitUser = (args, callback) -> 
+                    (args, cb) -> cb null, args[..1]
 
-                body    = ''
-                https   = require 'https'
-                options = 
+                ), (error, one, two, smidgeon) -> 
 
-                    hostname: 'api.github.com'
-                    port:     443
-                    path:     "/users/#{  args[0]  }"
-                    method:   'GET'
-                    headers:  'User-Agent': 'Mozilla/5.0'
-  
-                req = https.request options, (res) -> 
-
-                    res.on 'data', (data) -> body += data.toString()
-                    res.on 'end', -> callback null, JSON.parse body
-
-                req.end()
-
-
-
-            January = {
-
-                odometer: inject.async gitUser, (error, nomilous) -> 
-
-                    nomilous.location.should.equal ''
+                    smidgeon.should.equal 0.000001
                     test done
 
             }
 
-            January.odometer()
-
+            Quintessential.iota 0.000001
