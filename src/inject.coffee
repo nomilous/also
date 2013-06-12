@@ -12,11 +12,32 @@ argsOf = require('./util').argsOf
 
 exports.sync = (Preparator, decoratedFn) -> 
 
-    do (context = undefined) -> 
+    do (
+
+        context    = preparator: Preparator
+        configured = false
+
+    ) -> 
 
         #
         # * A `context` is enclosed onto the decorator scope to enable carrying a common 
         #   state store shared across all calls that may be made to the `decoratedFn`.
+        # 
+        #
+                                    #
+                                    # Assuming `Preparator` was a config Object
+                                    # -----------------------------------------
+                                    #  
+                                    # * Make the call to beforeAll()
+                                    # 
+                                    # * This call, being in the factory component of the
+                                    #   decorator, only happens once.
+                                    # 
+        try                         # 
+
+            context.preparator.beforeAll()
+
+
         #
         # * A function is returned. (It pretends to be the `decoratedFn`)
         # 
@@ -62,11 +83,10 @@ exports.sync = (Preparator, decoratedFn) ->
 
                         #
                         # * For the case of `Preparator` as an Object, `injected` is
-                        #   assigned an empty array and the `Preparator` is inserted
-                        #   into the newly initializedIf `context`
+                        #   assigned an empty array.
                         # 
 
-                    context ||= preparator: Preparator
+                    configured = true
                     []
 
 
@@ -81,7 +101,7 @@ exports.sync = (Preparator, decoratedFn) ->
 
 
 
-            unless context? 
+            unless configured
 
                 #
                 # Handle unconfigured injection

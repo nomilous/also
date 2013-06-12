@@ -125,7 +125,26 @@ require('nez').realize 'Inject', (inject, test, context) ->
             Oscillation.tarp()
 
 
-    context 'async( signatureFn, fn )', (it) -> 
+
+    context 'Preparator (decorator config)', (it) -> 
+
+        it 'calls beforeAll if supplied', (done) -> 
+
+            ducks = 0
+            quark = inject.sync(
+
+                beforeAll: -> ducks++
+                ->
+
+            )
+
+            quark quark quark()
+
+            ducks.should.equal 1
+            test done
+
+
+    context 'async( signatureFn, fn )', (it) -> ->
 
         it 'enables asyncronous injection', (good) -> 
 
