@@ -15,69 +15,87 @@ argsOf = require('./util').argsOf
 # to the decorated function.
 # 
 
-exports.sync = (signatureFn, fn) -> ->
+exports.sync = (signatureFn, fn) -> 
 
-    context  = undefined
-    injected = 
-
-        if typeof signatureFn == 'function'
-
-            #
-            # inject the return of signatureFn
-            #
-
-            signatureFn argsOf fn
-
-        else if signatureFn instanceof Array
-
-            #
-            # arrays are spread across the first 
-            # arguments
-            #
-
-            signatureFn
-
-        else if signatureFn instanceof Object
-
-            #
-            # mark as configured injection
-            #
-
-            context = config: signatureFn
-
-        else 
-
-            #
-            # number or string
-            #
-
-            [signatureFn]
-
-    unless context? 
+    do (context = undefined) -> 
 
         #
-        # handle unconfigured injection
+        # Enclose a context onto the decorator scope
         # 
-        # * append external arguments and call all into fn()
+        # * It exists before the decorated fn
+        #   is ever called.
+        # 
+        # * The same instance of context will 
+        #   be available at each calling of 
+        #   the decorated fn
         #
 
-        injected.push arg for arg in arguments
+        ->
 
-        #
-        # inject.sync returns fn result
-        #
-
-        return fn.apply null, injected
+            injected = 
 
 
-    #
-    # TODO: handle configured sync injection
-    #
+                if typeof signatureFn == 'function'
 
-    fn.apply null, null
-        
+                    #
+                    # inject the return of signatureFn
+                    #
+
+                    signatureFn argsOf fn
 
 
+                else if signatureFn instanceof Array
+
+                    #
+                    # arrays are spread across the first 
+                    # arguments
+                    #
+
+                    signatureFn
+
+
+                else if signatureFn instanceof Object
+
+                    #
+                    # mark as configured injection
+                    #
+
+                    context = config: signatureFn
+
+
+                else 
+
+                    #
+                    # number or string
+                    #
+
+                    [signatureFn]
+
+
+            unless context? 
+
+                #
+                # Handle unconfigured injection
+                # 
+                # * append external arguments and call all into fn()
+                #
+
+                injected.push arg for arg in arguments
+
+                #
+                # inject.sync returns fn result
+                #
+
+                return fn.apply null, injected
+
+           
+           
+            #
+            # Handle configured sync injection
+            #
+
+            fn.apply null, null
+            
 
 
 #
