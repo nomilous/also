@@ -3,7 +3,7 @@ argsOf = require('./util').argsOf
     
 # 
 # Syncronous Injection
-# --------------------
+# ====================
 # 
 # Each call made to the decorated function is first
 # passed through the signature function with an 
@@ -17,6 +17,7 @@ argsOf = require('./util').argsOf
 
 exports.sync = (signatureFn, fn) -> ->
 
+    context  = undefined
     injected = 
 
         if typeof signatureFn == 'function'
@@ -38,14 +39,11 @@ exports.sync = (signatureFn, fn) -> ->
 
         else if signatureFn instanceof Object
 
-
-            config = signatureFn
-
             #
-            # TODO: process the config
+            # mark as configured injection
             #
 
-            []
+            context = config: signatureFn
 
         else 
 
@@ -55,12 +53,31 @@ exports.sync = (signatureFn, fn) -> ->
 
             [signatureFn]
 
+    unless context? 
+
+        #
+        # handle unconfigured injection
+        # 
+        # * append external arguments and call all into fn()
+        #
+
+        injected.push arg for arg in arguments
+
+        #
+        # inject.sync returns fn result
+        #
+
+        return fn.apply null, injected
+
+
     #
-    # append external arguments and call all into fn()
+    # TODO: handle configured sync injection
     #
 
-    injected.push arg for arg in arguments
-    fn.apply null, injected
+    fn.apply null, null
+        
+
+
 
 
 #
@@ -76,6 +93,7 @@ exports.sync = (signatureFn, fn) -> ->
 
 exports.async = (signatureFn, fn) -> ->
 
+    context   = undefined
     original  = 
         for arg in arguments
             arg
@@ -98,24 +116,35 @@ exports.async = (signatureFn, fn) -> ->
         # arguments
         #
 
-        fn.apply null, signatureFn.concat original 
+        fn.apply null, signatureFn.concat original
 
     else if signatureFn instanceof Object
 
-        config = signatureFn
-
         #
-        # TODO: process the config
+        # mark as configured injection
         #
 
-        fn.apply null, []
+        context = config: signatureFn
 
     else 
-
-
 
         #
         # a string or number
         #
 
-        fn.apply null, [signatureFn].concat original 
+        fn.apply null, [signatureFn].concat original
+    
+
+    unless context?
+
+        #
+        # TODO: decide what inject.async returns
+        #
+
+        return
+
+    #
+    # TODO: handle configured async injection
+    #
+
+    fn.apply null, null
