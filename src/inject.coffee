@@ -18,9 +18,12 @@ exports.sync = (Preparator, decoratedFn) ->
         # * A `context` is enclosed onto the decorator scope to enable carrying a common 
         #   state store shared across all calls that may be made to the `decoratedFn`.
         #
+        # * A function is returned. (It pretends to be the `decoratedFn`)
+        # 
 
+        return ->  
 
-        ->              # 
+                        # 
             injected =  # * `injected` is an array that is used to assemble the arguments 
                         #   to be passed to the `decoratedFn` when called.
                         #
