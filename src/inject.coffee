@@ -2,104 +2,131 @@ argsOf = require('./util').argsOf
 
     
 # 
-# Syncronous Injection
-# ====================
+# Synchronous Injection
+# =====================
 # 
-# Each call made to the decorated function is first
-# passed through the signature function with an 
-# array of strings generated from the argument 
-# names of the decorated function.
-# 
-# The returned array from the signature function
-# is used to populate the arguments of the call
-# to the decorated function.
+# * Each call made to the decoratedFn is first passed through a synchronous preparation 
+#   process to assign / augment the arguments it will be called with.
 # 
 
-exports.sync = (signatureFn, fn) -> 
+
+exports.sync = (Preparator, decoratedFn) -> 
 
     do (context = undefined) -> 
 
         #
-        # Enclose a context onto the decorator scope
-        # 
-        # * It exists before the decorated fn
-        #   is ever called.
-        # 
-        # * The same instance of context will 
-        #   be available at each calling of 
-        #   the decorated fn
+        # * A `context` is enclosed onto the decorator scope to enable carrying a common 
+        #   state store shared across all calls that may be made to the `decoratedFn`.
         #
 
-        ->
 
-            injected = 
+        ->              # 
+            injected =  # * `injected` is an array that is used to assemble the arguments 
+                        #   to be passed to the `decoratedFn` when called.
+                        #
+             
 
+                if typeof Preparator == 'function'
 
-                if typeof signatureFn == 'function'
+                        # 
+                        # * For the case of `Preparator` as a function, `injected` is 
+                        #   assigned the return value of a call to `Preparator()` with
+                        #   an array of argument names extracted from the definition 
+                        #   of the `decoratedFn`
+                        #
+                        # 
 
-                    #
-                    # inject the return of signatureFn
-                    #
-
-                    signatureFn argsOf fn
-
-
-                else if signatureFn instanceof Array
-
-                    #
-                    # arrays are spread across the first 
-                    # arguments
-                    #
-
-                    signatureFn
+                    Preparator argsOf decoratedFn
 
 
-                else if signatureFn instanceof Object
+                else if Preparator instanceof Array
 
-                    #
-                    # mark as configured injection
-                    #
+                        #
+                        # * For the case of `Preparator` as an Array, `injected` is 
+                        #   assigned that array. 
+                        # 
 
-                    context = config: signatureFn
+                    Preparator
+
+
+                else if Preparator instanceof Object
+
+                        #
+                        # * For the case of `Preparator` as an Object, `injected` is
+                        #   assigned an empty array and the `Preparator` is inserted
+                        #   into the newly initializedIf `context`
+                        # 
+
+                    context ||= preparator: Preparator
 
 
                 else 
 
-                    #
-                    # number or string
-                    #
+                        #
+                        # * For the case of `Preparator` as a basic number or string, 
+                        #   it becomes the only element (so far), to be injected. 
+                        #
 
-                    [signatureFn]
+                    [Preparator]
+
 
 
             unless context? 
 
                 #
                 # Handle unconfigured injection
+                # -----------------------------
                 # 
-                # * append external arguments and call all into fn()
+                # * External arguments, from calls to the `decoratedFn` are appended into
+                #   the injection array.
                 #
 
                 injected.push arg for arg in arguments
 
                 #
-                # inject.sync returns fn result
+                # * And a call is made to the `decoratedFn` with the `injected` array 
+                #   applied as argumnets. 
+                # 
+
+                return decoratedFn.apply null, injected
+
+                # 
+                # TODO 
+                # ----
+                # 
+                # * null? 
+                # * Perhaps external object (this) can be maintaind. 
+                # * Because personally: 
+                # 
+                # 
+                #                 
+                #          ... i get mildly annoyed when my This
+                # 
+                #                    gets Thosed,
+                # 
+                #                          before i can That it! ...
+                # 
+                #                                     - nomilous
+                # 
                 #
+                # 
+                # * Maybe it already is? 'These' still confuze me... 
+                # 
 
-                return fn.apply null, injected
+                
 
            
-           
+
             #
             # Handle configured sync injection
             #
 
-            fn.apply null, null
+            decoratedFn.apply null, null
             
 
 
 #
-# Asyncronous Injection
+# Asynchronous Injection
 # ---------------------
 # 
 # The signature function will be called with a node
