@@ -58,6 +58,7 @@ exports.sync = (Preparator, decoratedFn) ->
                         # 
 
                     context ||= preparator: Preparator
+                    []
 
 
                 else 
