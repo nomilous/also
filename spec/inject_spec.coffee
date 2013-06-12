@@ -76,6 +76,19 @@ require('nez').realize 'Inject', (inject, test, context) ->
             Token.flywheel 'Puncture'
 
 
+        it 'accepts a config object instead of function', (done) -> 
+
+            Oscillation = {
+
+                tarp: inject.sync {}, ->
+
+                    test done
+
+            }
+
+            Oscillation.tarp()
+
+
     context 'async( signatureFn, fn )', (it) -> 
 
         it 'enables asyncronous injection', (good) -> 
@@ -115,3 +128,16 @@ require('nez').realize 'Inject', (inject, test, context) ->
             }
 
             Quintessential.iota 0.000001
+
+
+        it 'accepts a config object instead of function', (done) -> 
+
+            Perimeter = {
+
+                sorbet: inject.async {}, ->
+
+                    throw 'pending config'
+
+            }
+
+            Perimeter.sorbet()

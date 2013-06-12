@@ -17,7 +17,30 @@ argsOf = require('./util').argsOf
 
 exports.sync = (signatureFn, fn) -> ->
 
-    injected = signatureFn argsOf fn
+    injected = 
+
+        if typeof signatureFn == 'function'
+
+            #
+            # inject the return of signatureFn
+            #
+
+            signatureFn argsOf fn
+
+        else 
+
+            config = signatureFn
+
+            #
+            # TODO: process the config
+            #
+
+            []
+
+    #
+    # append external arguments and call all into fn()
+    #
+
     injected.push arg for arg in arguments
     fn.apply null, injected
 
@@ -39,8 +62,22 @@ exports.async = (signatureFn, fn) -> ->
         for arg in arguments
             arg
     
-    signatureFn argsOf(fn)[1..], (error, result) -> 
+    if typeof signatureFn == 'function'
 
-        fn.apply null, [error].concat( result ).concat original
+        #
+        # inject into fn() via async call to signatureFn
+        #
 
+        signatureFn argsOf(fn)[1..], (error, result) -> 
 
+            fn.apply null, [error].concat( result ).concat original
+
+    else 
+
+        config = signatureFn
+
+        #
+        # TODO: process the config
+        #
+
+        fn.apply null, []
