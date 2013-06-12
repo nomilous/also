@@ -97,6 +97,12 @@ exports.sync = (Preparator, decoratedFn) ->
                 # * And a call is made to the `decoratedFn` with the `injected` array 
                 #   applied as argumnets. 
                 # 
+                # 
+                #       argumnet |noun| ~ like a dream catcher, aften found
+                #                         shortly after a why { ;;; } block
+                # 
+                #                       ~ incompatable with how {  } blocks
+                #
 
                 return decoratedFn.apply null, injected
 
