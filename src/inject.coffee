@@ -1,5 +1,8 @@
 argsOf = require('./util').argsOf 
 
+                                    #
+                                    # col37 - (Preparator as Object)
+                                    #
     
 # 
 # Synchronous Injection
@@ -25,10 +28,10 @@ exports.sync = (Preparator, decoratedFn) ->
         # 
         #
                                     #
-                                    # Assuming `Preparator` was a config Object
-                                    # -----------------------------------------
+                                    # Handling `Preparator` as config Object
+                                    # --------------------------------------
                                     #  
-                                    # * Make the call to beforeAll()
+                                    # * Try {} the call to beforeAll()
                                     # 
                                     # * This call, being in the factory component of the
                                     #   decorator, only happens once.
@@ -149,13 +152,15 @@ exports.sync = (Preparator, decoratedFn) ->
                 # * Maybe it already is? 'These' still confuze me... 
                 # 
 
-                
 
-           
 
-            #
-            # Handle configured sync injection
-            #
+                                    #
+                                    # * Try the call to beforeEach()
+                                    #      
+            try
+
+                context.preparator.beforeEach()
+
 
             decoratedFn.apply null, null
             
