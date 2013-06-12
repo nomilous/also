@@ -103,9 +103,9 @@ exports.sync = (Preparator, decoratedFn) ->
                 #                 
                 #          ... i get mildly annoyed when my This
                 # 
-                #                    gets Thosed,
+                #                   gets Thosed,
                 # 
-                #                          before i can That it! ...
+                #                        before i could That it! ...
                 # 
                 #                                     - nomilous
                 # 
