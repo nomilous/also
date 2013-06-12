@@ -93,6 +93,24 @@ require('nez').realize 'Inject', (inject, test, context) ->
 
             )()
 
+        it 'spreads arrays across first args', (done) -> 
+
+            (
+                inject.sync [1,2,'three'], (one, two, three) -> 
+                    
+                    arguments.should.eql {
+
+                        '0': 1
+                        '1': 2
+                        '2': 'three'
+                        '3': 'FOUR'
+
+                    }
+
+                    test done
+
+            )('FOUR')
+
 
         it 'accepts a config object instead of function', (done) -> 
 
@@ -152,13 +170,36 @@ require('nez').realize 'Inject', (inject, test, context) ->
 
             Perimeter = {
 
-                sorbet: inject.async {}, ->
+                sorbet: inject.async {
+
+
+
+
+                }, ->
 
                     throw 'pending config'
 
             }
 
             Perimeter.sorbet()
+
+        it 'spreads arrays across first args', (done) -> 
+
+            (
+                inject.async [1,2,'three'], (one, two, three) -> 
+                    
+                    arguments.should.eql {
+
+                        '0': 1
+                        '1': 2
+                        '2': 'three'
+                        '3': 'FOUR'
+
+                    }
+
+                    test done
+
+            )('FOUR')
 
 
         it 'passes numbers straight through', (done) -> 

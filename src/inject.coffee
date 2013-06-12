@@ -27,7 +27,17 @@ exports.sync = (signatureFn, fn) -> ->
 
             signatureFn argsOf fn
 
-        else if typeof signatureFn == 'object'
+        else if signatureFn instanceof Array
+
+            #
+            # arrays are spread across the first 
+            # arguments
+            #
+
+            signatureFn
+
+        else if signatureFn instanceof Object
+
 
             config = signatureFn
 
@@ -81,7 +91,16 @@ exports.async = (signatureFn, fn) -> ->
             fn.apply null, [error].concat( result ).concat original
 
 
-    else if typeof signatureFn == 'object'
+    else if signatureFn instanceof Array
+
+        #
+        # arrays are spread across the first 
+        # arguments
+        #
+
+        fn.apply null, signatureFn.concat original 
+
+    else if signatureFn instanceof Object
 
         config = signatureFn
 
@@ -92,5 +111,11 @@ exports.async = (signatureFn, fn) -> ->
         fn.apply null, []
 
     else 
+
+
+
+        #
+        # a string or number
+        #
 
         fn.apply null, [signatureFn].concat original 
