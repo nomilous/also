@@ -27,7 +27,7 @@ exports.sync = (signatureFn, fn) -> ->
 
             signatureFn argsOf fn
 
-        else 
+        else if typeof signatureFn == 'object'
 
             config = signatureFn
 
@@ -36,6 +36,14 @@ exports.sync = (signatureFn, fn) -> ->
             #
 
             []
+
+        else 
+
+            #
+            # number or string
+            #
+
+            [signatureFn]
 
     #
     # append external arguments and call all into fn()
@@ -72,7 +80,8 @@ exports.async = (signatureFn, fn) -> ->
 
             fn.apply null, [error].concat( result ).concat original
 
-    else 
+
+    else if typeof signatureFn == 'object'
 
         config = signatureFn
 
@@ -81,3 +90,7 @@ exports.async = (signatureFn, fn) -> ->
         #
 
         fn.apply null, []
+
+    else 
+
+        fn.apply null, [signatureFn].concat original 

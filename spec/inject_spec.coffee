@@ -75,6 +75,24 @@ require('nez').realize 'Inject', (inject, test, context) ->
 
             Token.flywheel 'Puncture'
 
+        it 'passes numbers straight through', (done) -> 
+
+            (
+                inject.sync 1, (one) -> 
+                    one.should.equal 1
+                    test done
+
+            )()
+
+        it 'passes strings straight through', (done) -> 
+
+            (
+                inject.sync '1', (one) -> 
+                    one.should.equal '1'
+                    test done
+
+            )()
+
 
         it 'accepts a config object instead of function', (done) -> 
 
@@ -141,3 +159,23 @@ require('nez').realize 'Inject', (inject, test, context) ->
             }
 
             Perimeter.sorbet()
+
+
+        it 'passes numbers straight through', (done) -> 
+
+            (
+                inject.async 1, (one) -> 
+                    one.should.equal 1
+                    test done
+
+            )()
+
+        it 'passes strings straight through', (done) -> 
+
+            (
+                inject.async '1', (one, moo) -> 
+                    one.should.equal '1'
+                    moo.should.equal 'moo'
+                    test done
+
+            )('moo')
