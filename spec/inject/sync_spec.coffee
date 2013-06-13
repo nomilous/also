@@ -143,7 +143,7 @@ require('nez').realize 'Sync', (Sync, test, context) ->
 
             Sync( 
 
-                beforeAll:  (context) -> context.first.push   'ARG1'
+                beforeAll:  (context) -> context.first.push  'ARG1'
                 beforeEach: (context) -> context.inject.push 'ARG2'
                 afterEach:  (context) -> test done 
 
@@ -158,6 +158,21 @@ require('nez').realize 'Sync', (Sync, test, context) ->
 
 
             ) 'ELEPHANT', 7
+
+
+        it 'can append to injectied args', (done) -> 
+
+            Sync
+
+                beforeAll: (context) -> context.last.push 'end'
+
+                (the, end) -> 
+
+                    end.should.equal 'end', (the end)
+        
+
+
+            .apply null, [ -> test done ]
 
 
 

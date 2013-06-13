@@ -36,6 +36,7 @@ module.exports = (Preparator, decoratedFn) ->
         context.preparator = Preparator
         context.signature  = argsOf decoratedFn
         context.first      = []
+        context.last       = []
 
 
         if context.preparator.beforeAll?
@@ -158,6 +159,6 @@ module.exports = (Preparator, decoratedFn) ->
 
             context.inject.push arg for arg in arguments
 
-            decoratedFn.apply null, context.first.concat context.inject
+            decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
 
             context.preparator.afterEach context if context.preparator.afterEach? 
