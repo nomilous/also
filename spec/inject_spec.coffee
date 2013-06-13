@@ -187,14 +187,14 @@ require('nez').realize 'Inject', (inject, test, context) ->
 
                     (args, cb) -> cb null, args[..1]
 
-                ), (error, one, two, smidgeon) -> 
+                ), (error, c, G, planckLength) -> 
 
-                    smidgeon.should.equal 0.000001
+                    planckLength.should.equal '1.61619926 × 10-35 meters'
                     test done
 
             }
 
-            Quintessential.iota 0.000001
+            Quintessential.iota '1.61619926 × 10-35 meters'
 
 
         it 'accepts a config object instead of function', (done) -> 
