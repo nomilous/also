@@ -126,14 +126,38 @@ require('nez').realize 'Sync', (Sync, test, context) ->
             quark quark quark quark quark quark quark quark()
 
 
+
         it 'passes context to the befores and afters', (done) -> 
 
             preparator = 
 
                 beforeAll:  (context) -> context.should.be.an.instanceof Function
                 beforeEach: (context) -> context.signature.should.eql ['arg1', 'arg2', 'arg3']
-                afterEach: (context) -> context.preparator.should.equal preparator
+                afterEach:  (context) -> context.preparator.should.equal preparator
 
             Sync( preparator, (arg1, arg2, arg3) -> ) test done
+
+
+
+        it 'allows injection preparation in the befores', (done) -> 
+
+            Sync( 
+
+                beforeAll:  (context) -> context.first.push   'ARG1'
+                beforeEach: (context) -> context.inject.push 'ARG2'
+                afterEach:  (context) -> test done 
+
+                -> 
+
+                    arguments.should.eql 
+
+                        '0': 'ARG1'
+                        '1': 'ARG2'
+                        '2': 'ELEPHANT'
+                        '3': 7
+
+
+            ) 'ELEPHANT', 7
+
 
 

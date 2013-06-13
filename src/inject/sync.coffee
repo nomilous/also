@@ -35,20 +35,11 @@ module.exports = (Preparator, decoratedFn) ->
 
         context.preparator = Preparator
         context.signature  = argsOf decoratedFn
-        
+        context.first      = []
 
 
-                                    #
-                                    # Handling `Preparator` as config Object
-                                    # --------------------------------------
-                                    #  
-                                    # * Try {} the call to beforeAll()
-                                    # 
-                                    # * This call, being in the factory component of the
-                                    #   decorator, only happens once.
-                                    #         
-
-        context.preparator.beforeAll context if context.preparator.beforeAll? 
+        if context.preparator.beforeAll?
+            context.preparator.beforeAll context 
 
 
         return ->  
@@ -64,7 +55,7 @@ module.exports = (Preparator, decoratedFn) ->
                     # 
 
                                 # 
-            context.injects =   # * `injects` is an array that is used to assemble the arguments 
+            context.inject =    # * `inject` is an array that is used to assemble the arguments 
                                 #   to be passed to the `decoratedFn` when called.
                                 #
              
@@ -124,7 +115,7 @@ module.exports = (Preparator, decoratedFn) ->
                 #   the injection array.
                 #
 
-                context.injects.push arg for arg in arguments
+                context.inject.push arg for arg in arguments
 
                 #
                 # * And a call is made to the `decoratedFn` with the `injected` array 
@@ -137,7 +128,7 @@ module.exports = (Preparator, decoratedFn) ->
                 #                       ~ incompatable with how {  } blocks
                 #
 
-                return decoratedFn.apply null, context.injects
+                return decoratedFn.apply null, context.first.concat context.inject
 
                 # 
                 # TODO 
@@ -163,13 +154,10 @@ module.exports = (Preparator, decoratedFn) ->
                 # 
 
 
-
-                                    #
-                                    # * Try the call to beforeEach()
-                                    # 
-
             context.preparator.beforeEach context if context.preparator.beforeEach? 
 
-            decoratedFn.apply null, null
+            context.inject.push arg for arg in arguments
+
+            decoratedFn.apply null, context.first.concat context.inject
 
             context.preparator.afterEach context if context.preparator.afterEach? 
