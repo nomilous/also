@@ -18,20 +18,38 @@ ducks     = 0
 ducklings = 0
 quark     = sync 
 
-    beforeAll:  -> ducks++
     beforeEach: -> ducklings++
+    beforeAll:  -> ducks++
+    
     -> 
 
-
-        ducks: ducks
         ducklings: ducklings
-
-
+        ducks: ducks
+        
 
 
 quark quark quark quark quark quark quark()
 
 # => { ducks: 1, ducklings: 7 }
+
+
+```
+
+
+vague example with node modules
+-------------------------------
+
+```coffee
+
+nodeModules = (names) -> 
+    for name in names 
+        require name
+
+start = sync nodeModules, (crypto, zlib, net) -> 
+
+    #
+    # ...
+    # 
 
 
 ```
