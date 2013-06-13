@@ -160,7 +160,7 @@ require('nez').realize 'Sync', (Sync, test, context) ->
             ) 'ELEPHANT', 7
 
 
-        it 'can append to injectied args', (done) -> 
+        it 'can append to injected args', (done) -> 
 
             Sync
 
@@ -173,6 +173,5 @@ require('nez').realize 'Sync', (Sync, test, context) ->
 
 
             .apply null, [ -> test done ]
-
 
 
