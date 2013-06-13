@@ -17,16 +17,27 @@ module.exports = (Preparator, decoratedFn) ->
 
     do (
 
-        context    = preparator: Preparator
+        #
+        # Context
+        # ------- 
+        # 
+        # * A context (as function) is enclosed around the `decoratedFn`
+        #
+
+        context    = -> 
         configured = false
 
     ) -> 
 
         #
-        # * A `context` is enclosed onto the decorator scope to enable carrying a common 
-        #   state store shared across all calls that may be made to the `decoratedFn`.
-        # 
+        # * The context has as properties.
         #
+
+        context.preparator = Preparator
+        context.signature  = argsOf decoratedFn
+        
+
+
                                     #
                                     # Handling `Preparator` as config Object
                                     # --------------------------------------
@@ -41,25 +52,25 @@ module.exports = (Preparator, decoratedFn) ->
             context.preparator.beforeAll()
 
 
-        #
-        # * A function is returned. (It pretends to be the `decoratedFn`)
-        # 
-        # TODO
-        # ----
-        # 
-        # * Consider taking the context out the back door. 
-        #   (  As a property of this returned function  )
-        # 
-
         return ->  
 
-                        # 
-            injected =  # * `injected` is an array that is used to assemble the arguments 
-                        #   to be passed to the `decoratedFn` when called.
-                        #
+                    #
+                    # * A function is returned. (It pretends to be the `decoratedFn`)
+                    # 
+                    # TODO
+                    # ----
+                    # 
+                    # * Consider taking the context out the back door. 
+                    #   (  As a property of this returned function  )
+                    # 
+
+                                # 
+            context.injects =   # * `injects` is an array that is used to assemble the arguments 
+                                #   to be passed to the `decoratedFn` when called.
+                                #
              
 
-                if typeof Preparator == 'function'
+                if typeof context.preparator == 'function'
 
                         # 
                         # * For the case of `Preparator` as a function, `injected` is 
@@ -69,20 +80,20 @@ module.exports = (Preparator, decoratedFn) ->
                         #
                         # 
 
-                    Preparator argsOf decoratedFn
+                    context.preparator context.signature
 
 
-                else if Preparator instanceof Array
+                else if context.preparator instanceof Array
 
                         #
                         # * For the case of `Preparator` as an Array, `injected` is 
                         #   assigned that array. 
                         # 
 
-                    Preparator
+                    context.preparator
 
 
-                else if Preparator instanceof Object
+                else if context.preparator instanceof Object
 
                         #
                         # * For the case of `Preparator` as an Object, `injected` is
@@ -100,7 +111,7 @@ module.exports = (Preparator, decoratedFn) ->
                         #   it becomes the only element (so far), to be injected. 
                         #
 
-                    [Preparator]
+                    [context.preparator]
 
 
 
@@ -114,7 +125,7 @@ module.exports = (Preparator, decoratedFn) ->
                 #   the injection array.
                 #
 
-                injected.push arg for arg in arguments
+                context.injects.push arg for arg in arguments
 
                 #
                 # * And a call is made to the `decoratedFn` with the `injected` array 
@@ -127,7 +138,7 @@ module.exports = (Preparator, decoratedFn) ->
                 #                       ~ incompatable with how {  } blocks
                 #
 
-                return decoratedFn.apply null, injected
+                return decoratedFn.apply null, context.injects
 
                 # 
                 # TODO 

@@ -40,10 +40,11 @@ require('nez').realize 'Inject', (Inject, test, context) ->
             preparator = (argNames) -> 
 
                 argNames.should.eql [ 'first', 'second' ]
-                
+
                 #
                 # returned array injects
                 #
+                
                 argNames.push 'third'
                 return argNames
 
