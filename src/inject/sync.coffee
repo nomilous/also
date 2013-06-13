@@ -121,7 +121,7 @@ module.exports = (Preparator, decoratedFn) ->
                 #
                 # * And a call is made to the `decoratedFn` with the `injected` array 
                 #   applied as argumnets. 
-                # 
+            # 
                 # 
                 #       argumnet |noun| ~ like a dream catcher, aften found
                 #                         shortly after a why { ;;; } block
@@ -159,6 +159,8 @@ module.exports = (Preparator, decoratedFn) ->
 
             context.inject.push arg for arg in arguments
 
-            decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
+            result = decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
 
-            context.preparator.afterEach context if context.preparator.afterEach? 
+            context.preparator.afterEach context, result if context.preparator.afterEach?
+
+            return result
