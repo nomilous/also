@@ -126,3 +126,14 @@ require('nez').realize 'Sync', (Sync, test, context) ->
             quark quark quark quark quark quark quark quark()
 
 
+        it 'passes context to the befores and afters', (done) -> 
+
+            preparator = 
+
+                beforeAll:  (context) -> context.should.be.an.instanceof Function
+                beforeEach: (context) -> context.signature.should.eql ['arg1', 'arg2', 'arg3']
+                afterEach: (context) -> context.preparator.should.equal preparator
+
+            Sync( preparator, (arg1, arg2, arg3) -> ) test done
+
+

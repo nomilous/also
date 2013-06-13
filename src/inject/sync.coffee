@@ -30,7 +30,7 @@ module.exports = (Preparator, decoratedFn) ->
     ) -> 
 
         #
-        # * The context has as properties.
+        # * The context has properties.
         #
 
         context.preparator = Preparator
@@ -46,10 +46,9 @@ module.exports = (Preparator, decoratedFn) ->
                                     # 
                                     # * This call, being in the factory component of the
                                     #   decorator, only happens once.
-                                    # 
-        try                         # 
+                                    #         
 
-            context.preparator.beforeAll()
+        context.preparator.beforeAll context if context.preparator.beforeAll? 
 
 
         return ->  
@@ -167,10 +166,10 @@ module.exports = (Preparator, decoratedFn) ->
 
                                     #
                                     # * Try the call to beforeEach()
-                                    #      
-            try
+                                    # 
 
-                context.preparator.beforeEach()
-
+            context.preparator.beforeEach context if context.preparator.beforeEach? 
 
             decoratedFn.apply null, null
+
+            context.preparator.afterEach context if context.preparator.afterEach? 
