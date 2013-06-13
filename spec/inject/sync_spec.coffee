@@ -17,7 +17,7 @@ require('nez').realize 'Sync', (Sync, test, context) ->
             fn()
 
 
-    context 'with Preparator as Array', (it) ->   
+    context 'Preparator as Array', (it) ->   
         it 'is passed direcly as arg1..N', (done) -> 
             fn = Sync [1,2,'three'], (one, two, three) ->           
                 arguments.should.eql {
@@ -71,13 +71,13 @@ require('nez').realize 'Sync', (Sync, test, context) ->
                     #
                     (args) -> args[..1] 
 
-                ), (one, two, reason) -> 
+                ), (one, two, rea, son) -> 
                     one.should.equal    'one'
                     two.should.equal    'two'
-                    reason.should.equal 'Puncture'
+                    (rea + son).should.equal 'Puncture'
                     test done
             }
-            Token.flywheel 'Puncture'
+            Token.flywheel 'Pun', 'cture'
 
 
         it 'enables interesting things', (ok) -> 
