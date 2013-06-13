@@ -20,7 +20,7 @@ quark     = sync
 
     beforeEach: -> ducklings++
     beforeAll:  -> ducks++
-    
+
     -> 
 
         ducklings: ducklings
@@ -51,5 +51,6 @@ start = sync nodeModules, (crypto, zlib, net) ->
     # ...
     # 
 
+start()
 
 ```
