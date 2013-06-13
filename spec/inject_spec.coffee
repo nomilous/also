@@ -62,24 +62,3 @@ require('nez').realize 'Inject', (Inject, test, context) ->
 
             decoratedFunction 'fourth'
 
-
-    context 'inject.sync example', (done) -> 
-
-        
-        ducks     = 0
-        ducklings = 0
-
-        quark     = sync 
-
-            beforeAll:  -> ducks++
-            beforeEach: -> ducklings++
-
-            -> 
-
-                ducks: ducks
-                ducklings: ducklings
-
-
-        console.log quark quark quark quark quark quark quark()
-
-
