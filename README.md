@@ -3,7 +3,7 @@ also
 
 decorators
 
-### 0.0.1 (unstable)
+### 0.0.2 (unstable)
 
 
 vague example with ducks
