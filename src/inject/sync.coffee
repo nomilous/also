@@ -33,14 +33,13 @@ module.exports = (Preparator, decoratedFn) ->
         # * The context has properties.
         #
 
-        context.preparator = Preparator
         context.signature  = argsOf decoratedFn
         context.first      = []
         context.last       = []
 
 
-        if context.preparator.beforeAll?
-            context.preparator.beforeAll context 
+        if Preparator.beforeAll?
+            Preparator.beforeAll context 
 
 
         return ->  
@@ -61,7 +60,7 @@ module.exports = (Preparator, decoratedFn) ->
                                 #
              
 
-                if typeof context.preparator == 'function'
+                if typeof Preparator == 'function'
 
                         # 
                         # * For the case of `Preparator` as a function, `injected` is 
@@ -71,20 +70,20 @@ module.exports = (Preparator, decoratedFn) ->
                         #
                         # 
 
-                    context.preparator context.signature
+                    Preparator context.signature
 
 
-                else if context.preparator instanceof Array
+                else if Preparator instanceof Array
 
                         #
                         # * For the case of `Preparator` as an Array, `injected` is 
                         #   assigned that array. 
                         # 
 
-                    context.preparator
+                    Preparator
 
 
-                else if context.preparator instanceof Object
+                else if Preparator instanceof Object
 
                         #
                         # * For the case of `Preparator` as an Object, `injected` is
@@ -102,7 +101,7 @@ module.exports = (Preparator, decoratedFn) ->
                         #   it becomes the only element (so far), to be injected. 
                         #
 
-                    [context.preparator]
+                    [Preparator]
 
 
 
@@ -155,12 +154,12 @@ module.exports = (Preparator, decoratedFn) ->
                 # 
 
 
-            context.preparator.beforeEach context if context.preparator.beforeEach? 
+            Preparator.beforeEach context if Preparator.beforeEach? 
 
             context.inject.push arg for arg in arguments
 
             result = decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
 
-            context.preparator.afterEach context, result if context.preparator.afterEach?
+            Preparator.afterEach context, result if Preparator.afterEach?
 
             return result

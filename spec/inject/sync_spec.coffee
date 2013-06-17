@@ -133,7 +133,7 @@ require('nez').realize 'Sync', (Sync, test, context) ->
 
                 beforeAll:  (context) -> context.should.be.an.instanceof Function
                 beforeEach: (context) -> context.signature.should.eql ['arg1', 'arg2', 'arg3']
-                afterEach:  (context) -> context.preparator.should.equal preparator
+                afterEach:  (context) -> context.first.should.eql []
 
             Sync( preparator, (arg1, arg2, arg3) -> ) test done
 
