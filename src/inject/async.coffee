@@ -37,7 +37,6 @@ module.exports = (Preparator, decoratedFn) ->
 
                 success = ->
 
-
                     result = decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
                     Preparator.afterEach context, result if Preparator.afterEach?
                     return result
