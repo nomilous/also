@@ -115,3 +115,35 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 -> RUN.should.equal false
                 100
             )
+
+
+        it 'allows beforeAll to indicate failure into error handler', (done) -> 
+
+            fn = Async 
+
+                beforeAll: (done) -> done( new Error 'beforeAll failed' )
+                error: (error) -> 
+                    error.should.match /beforeAll failed/
+                    test done
+                -> console.log 'SHOULD NOT RUN'
+
+            fn()
+
+
+        it 'provides context into beforeAll as arg2', (done) -> 
+
+            fn = Async
+
+                 beforeAll: (done, context) -> 
+
+                    context.first.push 'ALWAYS ARG ONE'
+                    done()
+
+                 (arg1, arg2) -> 
+
+                    arg1.should.equal 'ALWAYS ARG ONE'
+                    arg2.should.equal 'ARG TWO'
+                    test done
+
+            fn('ARG TWO')
+

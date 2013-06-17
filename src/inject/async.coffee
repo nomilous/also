@@ -11,7 +11,7 @@ module.exports = (Preparator, decoratedFn) ->
     do (
 
         context    = -> 
-        configured = false
+        beforeAll  = Defer()
 
     ) -> 
 
@@ -19,11 +19,36 @@ module.exports = (Preparator, decoratedFn) ->
         context.first      = []
         context.last       = []
 
-        beforeAll = Defer()
+        if Preparator.beforeAll? and typeof Preparator.beforeAll is 'function'
 
-        if Preparator.beforeAll?
+            Preparator.beforeAll( 
 
-            Preparator.beforeAll beforeAll.resolve
+                #
+                # arg1 to beforeAll() resolves or rejects according to
+                # whether the result is an error 
+                #
+
+                (result) ->
+
+                    return beforeAll.reject result if result instanceof Error
+                    return beforeAll.resolve result
+
+                #
+                # arg2 is context
+                #
+
+                context
+
+            )
+
+
+        else 
+
+            #
+            # resolve directly - no beforeAll() defined
+            #
+
+            beforeAll.resolve()
 
         return ->  
 
@@ -35,11 +60,15 @@ module.exports = (Preparator, decoratedFn) ->
 
             beforeAll.promise.then(
 
-                success = ->
+                resolved = ->
 
                     result = decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
                     Preparator.afterEach context, result if Preparator.afterEach?
                     return result
+
+                rejected = (error) -> 
+
+                    Preparator.error error if Preparator.error instanceof Function
 
             )
 
