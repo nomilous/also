@@ -1,70 +1,38 @@
 argsOf = require('../util').argsOf 
 
-#
-# Asynchronous Injection
-# ---------------------
-# 
-# The signature function will be called with a node
-# style (error, result) callback.
-# 
-# This allows the result of an asyncronous callback
-# to populate the injection.
-# 
+module.exports = (Preparator, decoratedFn) -> 
 
-module.exports = (signatureFn, fn) -> ->
+    if typeof Preparator != 'object' or Preparator instanceof Array
 
-    context   = undefined
-    original  = 
-        for arg in arguments
-            arg
-    
-    if typeof signatureFn == 'function'
-
-        #
-        # inject into fn() via async call to signatureFn
-        #
-
-        signatureFn argsOf(fn)[1..], (error, result) -> 
-
-            fn.apply null, [error].concat( result ).concat original
+        throw new Error 'also.inject.async(Preparator, decoratedFn) requires Preparator as object'
 
 
-    else if signatureFn instanceof Array
+    do (
 
-        #
-        # arrays are spread across the first 
-        # arguments
-        #
+        context    = -> 
+        configured = false
 
-        fn.apply null, signatureFn.concat original
+    ) -> 
 
-    else if signatureFn instanceof Object
+        context.signature  = argsOf decoratedFn
+        context.first      = []
+        context.last       = []
 
-        #
-        # mark as configured injection
-        #
 
-        context = config: signatureFn
+        if Preparator.beforeAll?
 
-    else 
+            Preparator.beforeAll context 
 
-        #
-        # a string or number
-        #
+        return ->  
 
-        fn.apply null, [signatureFn].concat original
-    
+            context.inject = []
 
-    unless context?
+            Preparator.beforeEach context if Preparator.beforeEach? 
 
-        #
-        # TODO: decide what inject.async returns
-        #
+            context.inject.push arg for arg in arguments
 
-        return
+            result = decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
 
-    #
-    # TODO: handle configured async injection
-    #
+            Preparator.afterEach context, result if Preparator.afterEach?
 
-    fn.apply null, null
+            return result

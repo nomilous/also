@@ -1,8 +1,4 @@
 argsOf = require('../util').argsOf 
-
-                                    #
-                                    # col37 - (Preparator as Object)
-                                    #
     
 # 
 # Synchronous Injection
