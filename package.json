@@ -11,7 +11,9 @@
   ],
   "main": "./lib/also",
   "repository": "git@github.com:nomilous/also.git",
-  "dependencies": {},
+  "dependencies": {
+    "when": "~2.1.0"
+  },
   "devDependencies": {
     "nez": "0.0.7",
     "should": "~1.2.2"

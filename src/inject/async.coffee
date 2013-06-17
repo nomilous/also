@@ -1,4 +1,5 @@
 argsOf = require('../util').argsOf 
+Defer  = require('when').defer
 
 module.exports = (Preparator, decoratedFn) -> 
 
@@ -18,10 +19,11 @@ module.exports = (Preparator, decoratedFn) ->
         context.first      = []
         context.last       = []
 
+        beforeAll = Defer()
 
         if Preparator.beforeAll?
 
-            Preparator.beforeAll context 
+            Preparator.beforeAll beforeAll.resolve
 
         return ->  
 
@@ -31,8 +33,14 @@ module.exports = (Preparator, decoratedFn) ->
 
             context.inject.push arg for arg in arguments
 
-            result = decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
+            beforeAll.promise.then(
 
-            Preparator.afterEach context, result if Preparator.afterEach?
+                success = ->
 
-            return result
+
+                    result = decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
+                    Preparator.afterEach context, result if Preparator.afterEach?
+                    return result
+
+            )
+

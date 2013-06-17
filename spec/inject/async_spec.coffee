@@ -67,3 +67,29 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
             object.function()
 
+
+        it 'calls asyncronous beforeAll', (done) -> 
+
+            preparator = 
+
+                beforeAll: -> test done
+
+            object = {
+                function: Async preparator, (args) -> test done
+            }
+
+            object.function()
+
+
+        it 'does not call the function until beforeAll calls done', (done) -> 
+
+            RUN = false
+
+            preparator = beforeAll: (done) -> setTimeout done, 150
+            object     = fn: Async( preparator, (args) -> RUN = true; test done )
+            object.fn()
+            
+            setTimeout(
+                -> RUN.should.equal false
+                100
+            )
