@@ -25,19 +25,19 @@ module.exports = (Preparator, decoratedFn) ->
         beforeAll = -> 
 
             #
-            # TODO: can be factored out as also.once(fn) decorator
+            # TODO: done once part can be factored out as also.once(fn) decorator
             # 
 
             defer = Defer()
             return defer.resolve() if done.beforeAll
-            unless Preparator.beforeAll? and typeof Preparator.beforeAll is 'function'
+            return defer.resolve() unless (
 
-                #
-                # resolve directly - no beforeAll() defined
-                #
+                Preparator.beforeAll? and 
+                typeof Preparator.beforeAll is 'function' and 
+                done.beforeAll = true  # intentional 1 '=' sign! (set done flag)
 
-                done.beforeAll = true
-                return defer.resolve()
+
+            )
 
             #
             # call the defined beforeAll()
@@ -46,18 +46,13 @@ module.exports = (Preparator, decoratedFn) ->
             # * arg2 as context
             # 
 
-            Preparator.beforeAll( 
+            done = (result) ->
 
-                (result) ->
+                done.beforeAll = true
+                return defer.reject result if result instanceof Error
+                return defer.resolve result
 
-                    done.beforeAll = true
-                    return defer.reject result if result instanceof Error
-                    return defer.resolve result
-
-                context
-
-            )
-
+            Preparator.beforeAll done, context
             return defer.promise
 
 
@@ -78,21 +73,19 @@ module.exports = (Preparator, decoratedFn) ->
             beforeEach = -> 
 
                 defer = Defer()
-                unless Preparator.beforeEach? and typeof Preparator.beforeEach is 'function'
+                return defer.resolve() unless (
 
-                    return defer.resolve()
-
-                Preparator.beforeEach( 
-
-                    (result) ->
-
-                        return defer.reject result if result instanceof Error
-                        return defer.resolve result
-
-                    context
+                    Preparator.beforeEach? and 
+                    typeof Preparator.beforeEach is 'function'
 
                 )
 
+                done = (result) ->
+
+                    return defer.reject result if result instanceof Error
+                    return defer.resolve result
+
+                Preparator.beforeEach done, context
                 return defer.promise
 
 
