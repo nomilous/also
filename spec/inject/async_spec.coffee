@@ -245,7 +245,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
             )
 
 
-    context 'Preparator.afterEach()', (it) -> 
+    context 'Preparator.afterEach()', (it) ->
 
         throw 'pending'
 

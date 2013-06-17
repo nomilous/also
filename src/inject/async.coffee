@@ -8,7 +8,6 @@ module.exports = (Preparator, decoratedFn) ->
 
         throw new Error 'also.inject.async(Preparator, decoratedFn) requires Preparator as object'
 
-
     do (
 
         context = -> 
@@ -98,7 +97,18 @@ module.exports = (Preparator, decoratedFn) ->
 
                 resolved = -> 
 
-                    decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
+                    #
+                    # TODO: 
+                    # 
+                    # * Take decoratedFn async ()
+                    # * Take afterEach async and pend till decoratedFn resolves
+                    # * (perhaps) - make special case afterAll that runs whenever 
+                    #               all inprocess calls to decoratedFn are run
+                    #  
+                    #                  ie. when the 'queue' 
+                    #
+
+                    result = decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
                     Preparator.afterEach context, result if Preparator.afterEach?
 
                 rejected = (error) -> 
