@@ -1,5 +1,6 @@
-argsOf = require('../util').argsOf 
-Defer  = require('when').defer
+argsOf   = require('../util').argsOf 
+Defer    = require('when').defer
+sequence = require 'when/sequence'
 
 module.exports = (Preparator, decoratedFn) -> 
 
@@ -10,8 +11,10 @@ module.exports = (Preparator, decoratedFn) ->
 
     do (
 
-        context    = -> 
-        beforeAll  = Defer()
+        context = -> 
+        done    = {
+            beforeAll:  false
+        }
 
     ) -> 
 
@@ -19,56 +22,96 @@ module.exports = (Preparator, decoratedFn) ->
         context.first      = []
         context.last       = []
 
-        if Preparator.beforeAll? and typeof Preparator.beforeAll is 'function'
+        beforeAll = -> 
+
+            #
+            # TODO: can be factored out as also.once(fn) decorator
+            # 
+
+            defer = Defer()
+            return defer.resolve() if done.beforeAll
+            unless Preparator.beforeAll? and typeof Preparator.beforeAll is 'function'
+
+                #
+                # resolve directly - no beforeAll() defined
+                #
+
+                done.beforeAll = true
+                return defer.resolve()
+
+            #
+            # call the defined beforeAll()
+            # 
+            # * arg1 as resolver/rejector (depending on result)
+            # * arg2 as context
+            # 
 
             Preparator.beforeAll( 
 
-                #
-                # arg1 to beforeAll() resolves or rejects according to
-                # whether the result is an error 
-                #
-
                 (result) ->
 
-                    return beforeAll.reject result if result instanceof Error
-                    return beforeAll.resolve result
-
-                #
-                # arg2 is context
-                #
+                    done.beforeAll = true
+                    return defer.reject result if result instanceof Error
+                    return defer.resolve result
 
                 context
 
             )
 
+            return defer.promise
 
-        else 
-
-            #
-            # resolve directly - no beforeAll() defined
-            #
-
-            beforeAll.resolve()
 
         return ->  
 
+            #
+            # insert external arguments into the pending injection array
+            # 
+            # * these will be prepended with whatever is placed into
+            #   context.first (array) by the beforeAll/Each
+            # 
+            # * also append to, from context.last (array)
+            # 
+
             context.inject = []
-
-            Preparator.beforeEach context if Preparator.beforeEach? 
-
             context.inject.push arg for arg in arguments
 
-            beforeAll.promise.then(
+            beforeEach = -> 
 
-                resolved = ->
+                defer = Defer()
+                unless Preparator.beforeEach? and typeof Preparator.beforeEach is 'function'
 
-                    result = decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
+                    return defer.resolve()
+
+                Preparator.beforeEach( 
+
+                    (result) ->
+
+                        return defer.reject result if result instanceof Error
+                        return defer.resolve result
+
+                    context
+
+                )
+
+                return defer.promise
+
+
+            sequence([
+
+                beforeAll
+                beforeEach
+
+            ]).then(
+
+                resolved = -> 
+
+                    decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
                     Preparator.afterEach context, result if Preparator.afterEach?
-                    return result
 
                 rejected = (error) -> 
 
                     Preparator.error error if Preparator.error instanceof Function
 
             )
+
 

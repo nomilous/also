@@ -1,9 +1,9 @@
 require('nez').realize 'Async', (Async, test, context, should) -> 
 
-    context 'unit', (it) ->
+    context 'Preparator type', (it) ->
 
 
-        it 'throws on Preparator as Function', (done) -> 
+        it 'cannot be Function', (done) -> 
 
             preparator = ->
 
@@ -17,7 +17,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 test done
 
 
-        it 'throws on Preparator as Array', (done) -> 
+        it 'cannot be Array', (done) -> 
 
             preparator = []
 
@@ -30,7 +30,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 error.should.match /requires Preparator as object/
                 test done
 
-        it 'throws on Preparator as Number', (done) -> 
+        it 'cannot be Number', (done) -> 
 
             preparator = 1
 
@@ -43,7 +43,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 error.should.match /requires Preparator as object/
                 test done 
 
-        it 'throws on Preparator as String', (done) -> 
+        it 'cannot be String', (done) -> 
 
             preparator = 'str'
 
@@ -57,7 +57,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 test done
 
             
-        it 'accepts Preparator as object (Hash)', (done) -> 
+        it 'must be object (Hash)', (done) -> 
 
             preparator = {}
 
@@ -67,8 +67,10 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
             object.function()
 
+    context 'Preparator.beforeAll()', (it) ->
 
-        it 'calls asyncronous beforeAll', (done) -> 
+
+        it 'is called', (done) -> 
 
             preparator = 
 
@@ -81,7 +83,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
             object.function()
 
 
-        it 'does not call the function until beforeAll calls done()', (done) -> 
+        it 'suspends call to decoratedFn till done()', (done) -> 
 
             RUN = false
 
@@ -90,7 +92,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 beforeAll: (done) -> 
 
                     #
-                    # delay beforeAll
+                    # delay in beforeAll
                     #
 
                     setTimeout done, 150
@@ -116,6 +118,35 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 100
             )
 
+            setTimeout(
+                -> RUN.should.equal true
+                200
+            )
+
+        it 'is run only once, beforeAll calls to decoratedFn', (done) ->
+
+            cn = before: 0, during: 0
+            fn = Async
+
+                beforeAll: (done) -> cn.before++; done()
+                -> 
+                    cn.before.should.equal 1 # already
+                    cn.during++
+
+            fn()
+            fn()
+            fn()
+            fn()
+            fn()
+            
+            setTimeout(
+                -> 
+                    cn.should.eql before: 1, during: 5
+                    test done
+
+                100
+            )
+            
 
         it 'allows beforeAll to indicate failure into error handler', (done) -> 
 
@@ -142,8 +173,79 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                  (arg1, arg2) -> 
 
                     arg1.should.equal 'ALWAYS ARG ONE'
-                    arg2.should.equal 'ARG TWO'
+                    arg2.should.equal 'another arg'
                     test done
 
-            fn('ARG TWO')
+            fn('another arg')
+
+    context 'Preparator.beforeEach()', (it) -> 
+
+        it 'is called', (done) -> 
+
+            fn = Async
+
+                beforeEach: -> test done
+                ->
+
+            fn()
+
+
+        it 'suspends call to decoratedFn till done()', (done) -> 
+
+            RUN = false
+
+            fn  = Async
+
+                beforeEach: (done) -> 
+
+                    setTimeout done, 150
+
+                (arg) -> 
+
+                    RUN = true
+                    test done
+
+            fn('ARG')
+
+            setTimeout(
+                -> RUN.should.equal false
+                100
+            )
+
+            setTimeout(
+                -> RUN.should.equal true
+                200
+            )
+
+        it 'is run once beforeEach call to decoratedFn', (done) -> 
+
+            cn = before: 0, during: 0
+            fn = Async
+
+                beforeEach: (done) -> 
+
+                    cn.before++
+                    done()
+
+                -> 
+                    cn.during++
+
+            fn()
+            fn()
+            fn()
+            fn()
+            fn()
+
+            setTimeout(
+                -> 
+                    cn.should.eql before: 5, during: 5
+                    test done
+
+                100
+            )
+
+
+    context 'Preparator.afterEach()', (it) -> 
+
+        throw 'pending'
 
