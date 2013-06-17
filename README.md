@@ -3,11 +3,11 @@ also
 
 decorators
 
-### 0.0.2 (unstable)
+### 0.0.3 (unstable)
 
 
-vague example with ducks
-------------------------
+example with ducks
+------------------
 
 ```coffee
 
@@ -36,8 +36,8 @@ quark quark quark quark quark quark quark()
 ```
 
 
-vague example with node modules
--------------------------------
+example with node modules
+-------------------------
 
 ```coffee
 
