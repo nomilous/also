@@ -1,4 +1,4 @@
 module.exports = 
 
-    inject: require './inject'
-    wait:   require './wait'
+    inject:   require './inject'
+    schedule: require './schedule'

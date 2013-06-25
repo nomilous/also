@@ -1,3 +1,7 @@
+#
+# TODO: timeout: 
+#
+
 wait = (Preparator, decoratedFn) -> 
 
     if typeof Preparator == 'function' and not decoratedFn?
@@ -34,9 +38,7 @@ wait = (Preparator, decoratedFn) ->
 
                 clearInterval interval
 
-
         ), Preparator.retry || 10
-
 
 module.exports = wait
 
