@@ -25,10 +25,14 @@ wait = (Preparator, decoratedFn) ->
 
         interval = setInterval ( ->
 
-            if Preparator.until() == true
+            try if Preparator.until() == true
 
                 clearInterval interval
                 decoratedFn.apply this, arguments
+
+            catch error
+
+                clearInterval interval
 
 
         ), Preparator.retry || 10
