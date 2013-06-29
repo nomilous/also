@@ -2,7 +2,7 @@ require('nez').realize 'Only', (Only, test, context, should) ->
 
     context 'if match', (it) -> 
 
-        it 'runs the function only if argument matches', (done) -> 
+        it 'does not run the function if arg1 does not match', (done) -> 
 
             RAN        = false
             object     = property: 100
@@ -12,3 +12,16 @@ require('nez').realize 'Only', (Only, test, context, should) ->
 
             RAN.should.equal false
             test done
+
+
+        it 'runs the function if arg1 does match', (done) -> 
+
+            RAN    = false
+            object = property: 'value'
+            
+            fn     = Only if: match: { property: 'value' }, (obj) -> RAN = true
+            fn( object )
+
+            RAN.should.equal true
+            test done
+
