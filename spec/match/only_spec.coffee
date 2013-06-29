@@ -25,3 +25,26 @@ require('nez').realize 'Only', (Only, test, context, should) ->
             RAN.should.equal true
             test done
 
+
+        it 'allows matching from an array', (done) -> 
+
+            ATE   = false
+            lunch = 
+
+                eat: Only 
+
+                    if: matchAll: sound: ['moo', 'cluck', 'oink']
+                    
+                    (meat) -> ATE = true
+
+
+            lunch.eat sound: 'chirrp'
+            ATE.should.equal false
+
+            lunch.eat sound: 'moo'
+            ATE.should.equal true
+
+            test done
+
+
+

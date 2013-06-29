@@ -5,8 +5,19 @@ matchAll = (matcher, obj) ->
     
     for key of matcher
 
-        doesCount++ if obj[key]? and obj[key] == matcher[key]
         shouldCount++
+
+        if matcher[key] instanceof Array
+
+            for value in matcher[key]
+
+                 doesCount++ if obj[key] == value
+
+        else
+
+            doesCount++ if obj[key]? and obj[key] == matcher[key]
+
+        
 
     shouldCount == doesCount
 
