@@ -4,11 +4,11 @@ require('nez').realize 'Only', (Only, test, context, should) ->
 
         it 'does not run the function if arg1 does not matchAll', (done) -> 
 
-            RAN        = false
+            RAN     = false
             object = property1: 'value1', property2: 'NO'
-            ifMatch    = if: matchAll: propert1: 'value1', property2: 'value2'
+            match  = matchAll: propert1: 'value1', property2: 'value2'
 
-            Only( ifMatch, (obj) -> RAN = true )( object )
+            Only.if( match, (obj) -> RAN = true )( object )
 
             RAN.should.equal false
             test done
@@ -19,7 +19,7 @@ require('nez').realize 'Only', (Only, test, context, should) ->
             RAN    = false
             object = property1: 'value1', property2: 'value2'
 
-            fn     = Only if: matchAll: { property1: 'value1' }, (obj) -> RAN = true
+            fn     = Only.if matchAll: { property1: 'value1' }, (obj) -> RAN = true
             fn( object )
 
             RAN.should.equal true
@@ -31,9 +31,9 @@ require('nez').realize 'Only', (Only, test, context, should) ->
             ATE   = false
             lunch = 
 
-                eat: Only 
+                eat: Only.if
 
-                    if: matchAll: sound: ['moo', 'cluck', 'oink']
+                    matchAll: sound: ['moo', 'cluck', 'oink']
                     
                     (meat) -> ATE = true
 

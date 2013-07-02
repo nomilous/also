@@ -21,12 +21,11 @@ matchAll = (matcher, obj) ->
 
     shouldCount == doesCount
 
-module.exports = (Preparator, decoratedFn) -> 
+module.exports.if = (Preparator, decoratedFn) -> 
     
     -> 
 
-        return unless Preparator.if?
-        return unless Preparator.if.matchAll?
-        return unless matchAll Preparator.if.matchAll, arguments[0]
+        return unless Preparator.matchAll?
+        return unless matchAll Preparator.matchAll, arguments[0]
 
         decoratedFn.apply this, arguments
