@@ -67,6 +67,51 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
             object.function()
 
+
+    context 'promise', (it) -> 
+
+        it 'returns a promise', (done) -> 
+
+            should.exist (Async {}, -> )().then
+            #should.exist fn().then
+            test done
+
+
+        it 'defaults passing the promise resolver / rejector as arg1', (done) -> 
+
+            #
+            # this is still up in the air re "interface" design
+            #
+
+            fn1 = Async {}, (done) -> done new Error('ERROR')
+            
+            fn2 = Async {}, (done) -> done 'RESULT'
+
+
+            fn1().then(
+
+                (result) ->
+                (error) -> error.should.match /ERROR/
+
+            )
+
+            fn2().then(
+
+                (result) -> result.should.equal 'RESULT'; test done
+                (error) ->
+
+            )
+
+        it 'provides result from beforeAll, beforeEach and afterAll', (done) -> 
+
+            throw 'pending'
+
+
+        it 'provides access to the deferral in beforeEach for alternative injection', (done) -> 
+
+            throw 'pending'
+
+
     context 'Preparator.beforeAll()', (it) ->
 
 
@@ -247,5 +292,51 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
     context 'Preparator.afterEach()', (it) ->
 
-        throw 'pending'
+        it 'runs after the call to decoratedFn', (done) ->
+
+            RAN_ALREADY = false
+
+            Async
+
+                afterEach: -> 
+
+                    RAN_ALREADY.should.equal true
+                    test done
+
+                (done) -> 
+
+                    RAN_ALREADY = true
+                    done()
+
+            .apply null
+
+
+        it 'runs after each call', (done) -> 
+
+            count  = undefined
+            counts = []
+
+            fn = Async
+
+                beforeAll: (done) -> 
+
+                    count = 10
+                    done()
+
+                afterEach: (done) -> 
+
+                    counts.push count
+                    test done
+
+                (done) -> 
+
+                    count++
+                    done()
+
+
+            fn().then -> fn().then -> fn().then -> 
+
+                counts.should.eql [11,12,13]
+                test done
+
 

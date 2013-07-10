@@ -11,9 +11,7 @@ module.exports = (Preparator, decoratedFn) ->
     do (
 
         context = -> 
-        done    = {
-            beforeAll:  false
-        }
+        beforeAllDone =false
 
     ) -> 
 
@@ -28,15 +26,15 @@ module.exports = (Preparator, decoratedFn) ->
             # 
 
             defer = Defer()
-            return defer.resolve() if done.beforeAll
+            return defer.resolve() if beforeAllDone
             return defer.resolve() unless (
 
                 Preparator.beforeAll? and 
-                typeof Preparator.beforeAll is 'function' and 
-                done.beforeAll = true  # intentional 1 '=' sign! (set done flag)
-
+                typeof Preparator.beforeAll is 'function'
 
             )
+
+            beforeAllDone = true
 
             #
             # call the defined beforeAll()
@@ -46,8 +44,7 @@ module.exports = (Preparator, decoratedFn) ->
             # 
 
             done = (result) ->
-
-                done.beforeAll = true
+  
                 return defer.reject result if result instanceof Error
                 return defer.resolve result
 
@@ -66,8 +63,8 @@ module.exports = (Preparator, decoratedFn) ->
             # * also append to, from context.last (array)
             # 
 
-            context.inject = []
-            context.inject.push arg for arg in arguments
+            inject = []
+            inject.push arg for arg in arguments
 
             beforeEach = -> 
 
@@ -88,33 +85,67 @@ module.exports = (Preparator, decoratedFn) ->
                 return defer.promise
 
 
+            callDecoratedFn = -> 
+            
+                defer = Defer()
+
+                decoratedFn.apply null, [ (result) ->
+
+                    return defer.reject result if result instanceof Error
+                    return defer.resolve result
+
+                ].concat context.first.concat( inject ).concat context.last
+                return defer.promise
+
+
+            afterEach = -> 
+
+                defer = Defer()
+                return defer.resolve() unless (
+
+                    Preparator.afterEach? and 
+                    typeof Preparator.afterEach is 'function'
+
+                )
+
+                done = (result) ->
+
+                    return defer.reject result if result instanceof Error
+                    return defer.resolve result
+
+                Preparator.afterEach done, context
+                return defer.promise
+
+            done = Defer()
+
             sequence([
 
                 beforeAll
                 beforeEach
+                callDecoratedFn
+                afterEach
 
             ]).then(
 
-                resolved = -> 
+                (results) -> 
 
-                    #
-                    # TODO: 
-                    # 
-                    # * Take decoratedFn async ()
-                    # * Take afterEach async and pend till decoratedFn resolves
-                    # * (perhaps) - make special case afterAll that runs whenever 
-                    #               all inprocess calls to decoratedFn are run
-                    #  
-                    #                  ie. when the 'queue' 
-                    #
+                    # [0] beforeAll result
+                    # [1] beforeEach result
+                    done.resolve results[2]
+                    # [3] afterEach result
 
-                    result = decoratedFn.apply null, context.first.concat( context.inject ).concat context.last
-                    Preparator.afterEach context, result if Preparator.afterEach?
-
-                rejected = (error) -> 
+                (error) -> 
 
                     Preparator.error error if Preparator.error instanceof Function
+                    done.reject error
+
+                done.notify
 
             )
+
+            done.promise
+
+
+        
 
 
