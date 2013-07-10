@@ -102,12 +102,35 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
             )
 
-        it 'provides result from beforeAll, beforeEach and afterAll', (done) -> 
-
-            throw 'pending'
+        it 'provides result from beforeAll, beforeEach and afterAll through status', (done) -> 
 
 
-        it 'provides access to the deferral in beforeEach for alternative injection', (done) -> 
+            RESULTS = []
+            fn = Async 
+
+                beforeEach: (done) -> done 'BEFORE_EACH_RESULT'
+                afterEach:  (done) -> done 'AFTER_EACH_RESULT'
+                (done) -> done 'FN_RESULT'
+
+            fn().then(
+
+                (result) -> 
+
+                    RESULTS.should.eql [
+
+                        { beforeEach: 'BEFORE_EACH_RESULT' }
+                        { result: 'FN_RESULT' }
+                        { afterEach: 'AFTER_EACH_RESULT' }
+
+                    ]
+                    test done
+
+                (error)  -> 
+                (notify) -> RESULTS.push notify
+            )
+
+
+        it 'provides access to the deferral for alternative injection', (done) -> 
 
             throw 'pending'
 

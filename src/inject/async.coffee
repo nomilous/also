@@ -66,6 +66,8 @@ module.exports = (Preparator, decoratedFn) ->
             inject = []
             inject.push arg for arg in arguments
 
+            finished = Defer()
+
             beforeEach = -> 
 
                 defer = Defer()
@@ -78,6 +80,7 @@ module.exports = (Preparator, decoratedFn) ->
 
                 done = (result) ->
 
+                    finished.notify beforeEach: result
                     return defer.reject result if result instanceof Error
                     return defer.resolve result
 
@@ -91,6 +94,7 @@ module.exports = (Preparator, decoratedFn) ->
 
                 decoratedFn.apply null, [ (result) ->
 
+                    finished.notify result: result
                     return defer.reject result if result instanceof Error
                     return defer.resolve result
 
@@ -110,13 +114,12 @@ module.exports = (Preparator, decoratedFn) ->
 
                 done = (result) ->
 
+                    finished.notify afterEach: result
                     return defer.reject result if result instanceof Error
                     return defer.resolve result
 
                 Preparator.afterEach done, context
                 return defer.promise
-
-            done = Defer()
 
             sequence([
 
@@ -131,7 +134,7 @@ module.exports = (Preparator, decoratedFn) ->
 
                     # [0] beforeAll result
                     # [1] beforeEach result
-                    done.resolve results[2]
+                    finished.resolve results[2]
                     # [3] afterEach result
 
                 (error) -> 
@@ -139,11 +142,11 @@ module.exports = (Preparator, decoratedFn) ->
                     Preparator.error error if Preparator.error instanceof Function
                     done.reject error
 
-                done.notify
+                finished.notify
 
             )
 
-            done.promise
+            finished.promise
 
 
         
