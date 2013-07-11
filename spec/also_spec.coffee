@@ -7,57 +7,62 @@ require('nez').realize 'Also', (also, test, context) ->
     
             {async} = also.inject
 
-            object = 
+            preparator = 
 
-                function: async 
+                beforeAll: (done, context) -> 
 
-                    beforeAll: (done, context) -> 
+                    console.log 'beforeAll with pending calls', context.queue.length
+                    done()
 
-                        console.log 'beforeAll with pending calls', context.queue.length
-                        done()
+                beforeEach: (done, context) -> 
 
-                    beforeEach: (done, context) -> 
+                    #
+                    # inject resolver as last arg
+                    #
+                    # context.last[0] = context.defer.resolve
+                    context.last[1] = context.defer.resolve
+                    done()
 
-                        #
-                        # inject resolver as last arg
-                        #
-                        # context.last[0] = context.defer.resolve
-                        context.last[1] = context.defer.resolve
-                        done()
+                afterEach: (done, context) -> 
 
-                    afterEach: (done, context) -> 
-
-                        done()
-                        console.log 'afterEach with remaining calls', context.queue.length
+                    done()
+                    console.log 'afterEach with remaining calls', context.queue.length
 
 
-                    (count, undef, done) -> 
 
-                        console.log 'function', count
-                        done()
+            class Thing
 
+                constructor: (@name) -> 
+
+                function: async( preparator, (count, undef, done) => 
+
+                    console.log @name, 'runs function with count:', count
+                    done()
+
+                )
+
+            thing = new Thing 'NAME'
             
-
-            object.function( 1 )
-            object.function( 2 )
-            object.function( 3 )
-            object.function( 4 )
-            object.function( 5 )
-            object.function( 6 )
-            object.function( 7 )
-            object.function( 8 )
-            object.function( 9 )
-            object.function( 10 )
-            object.function( 11 )
-            object.function( 12 )
-            object.function( 13 )
-            object.function( 14 )
-            object.function( 15 )
-            object.function( 16 )
-            object.function( 17 )
-            object.function( 18 )
-            object.function( 19 )
-            object.function( 20 )
+            thing.function( 1 )
+            thing.function( 2 )
+            thing.function( 3 )
+            thing.function( 4 )
+            thing.function( 5 )
+            thing.function( 6 )
+            thing.function( 7 )
+            thing.function( 8 )
+            thing.function( 9 )
+            thing.function( 10 )
+            thing.function( 11 )
+            thing.function( 12 )
+            thing.function( 13 )
+            thing.function( 14 )
+            thing.function( 15 )
+            thing.function( 16 )
+            thing.function( 17 )
+            thing.function( 18 )
+            thing.function( 19 )
+            thing.function( 20 )
 
 
         it 'ducks', (done) -> 
