@@ -35,11 +35,15 @@ require('nez').realize 'Also', (also, test, context) ->
 
             }
 
-            object.function( 1 ).then ->
-
-                object.function( 2 ).then ->
-
-                    test done
+            object.function( 1 )
+            object.function( 2 )
+            object.function( 3 )
+            object.function( 4 )
+            object.function( 5 )
+            object.function( 6 )
+            object.function( 7 )
+            object.function( 8 )
+            object.function( 9 )
 
 
         it 'ducks', (done) -> 

@@ -102,7 +102,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
             )
 
-        it 'provides result from beforeEach and afterAll through status', (done) -> 
+        it 'provides result from beforeEach and afterEach through status', (done) -> 
 
             RESULTS = []
             fn = Async 
