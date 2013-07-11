@@ -7,7 +7,7 @@ require('nez').realize 'Also', (also, test, context) ->
     
             {async} = also.inject
 
-            object = {
+            object = 
 
                 function: async 
 
@@ -18,8 +18,11 @@ require('nez').realize 'Also', (also, test, context) ->
 
                     beforeEach: (done, context) -> 
 
-                        context.first[0] = RESOLVE: context.defer.resolve
-                        #console.log 'beforeEach'
+                        #
+                        # inject resolver as last arg
+                        #
+                        # context.last[0] = context.defer.resolve
+                        context.last[1] = context.defer.resolve
                         done()
 
                     afterEach: (done, context) -> 
@@ -28,12 +31,12 @@ require('nez').realize 'Also', (also, test, context) ->
                         console.log 'afterEach with remaining calls', context.queue.length
 
 
-                    (done, count) -> 
+                    (count, undef, done) -> 
 
                         console.log 'function', count
-                        done.RESOLVE()
+                        done()
 
-            }
+            
 
             object.function( 1 )
             object.function( 2 )
@@ -44,18 +47,17 @@ require('nez').realize 'Also', (also, test, context) ->
             object.function( 7 )
             object.function( 8 )
             object.function( 9 )
-            object.function( 10 ).then -> 
-
-                object.function( 11 )
-                object.function( 12 )
-                object.function( 13 )
-                object.function( 14 )
-                object.function( 15 )
-                object.function( 16 )
-                object.function( 17 )
-                object.function( 18 )
-                object.function( 19 )
-                object.function( 20 )
+            object.function( 10 )
+            object.function( 11 )
+            object.function( 12 )
+            object.function( 13 )
+            object.function( 14 )
+            object.function( 15 )
+            object.function( 16 )
+            object.function( 17 )
+            object.function( 18 )
+            object.function( 19 )
+            object.function( 20 )
 
 
         it 'ducks', (done) -> 
