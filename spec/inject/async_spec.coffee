@@ -102,8 +102,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
             )
 
-        it 'provides result from beforeAll, beforeEach and afterAll through status', (done) -> 
-
+        it 'provides result from beforeEach and afterAll through status', (done) -> 
 
             RESULTS = []
             fn = Async 
@@ -132,7 +131,28 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
         it 'provides access to the deferral for alternative injection', (done) -> 
 
-            throw 'pending'
+            fn = Async
+
+                beforeEach: (done, context) -> 
+
+                    #
+                    # set alternative to the default injection of resolver as arg1
+                    #
+
+                    defer = context.defer
+                    context.last[0] = defer.resolve
+                    done()
+
+                (arg1, arg2, resolve) -> 
+
+                    resolve 'RESULT: ' + arg1 + arg2
+
+
+            fn( 'A', 'B' ).then (result) -> 
+
+                result.should.equal 'RESULT: AB'
+                test done
+
 
 
     context 'Preparator.beforeAll()', (it) ->

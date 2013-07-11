@@ -18,6 +18,7 @@ require('nez').realize 'Also', (also, test, context) ->
 
                     beforeEach: (done, inject) -> 
 
+                        inject.first[0] = RESOLVE: inject.defer.resolve
                         console.log 'beforeEach'
                         done()
 
@@ -27,18 +28,18 @@ require('nez').realize 'Also', (also, test, context) ->
                         done()
 
 
-                    (done, count) -> 
+                    (done, count, last) -> 
 
                         console.log 'function', count
-                        done()
+                        done.RESOLVE()
 
             }
 
             object.function( 1 ).then ->
-                
-                object.function 2
 
-            test done
+                object.function( 2 ).then ->
+
+                    test done
 
 
         it 'ducks', (done) -> 
@@ -61,3 +62,5 @@ require('nez').realize 'Also', (also, test, context) ->
 
                 ducks: 1
                 ducklings: 7
+
+            test done

@@ -4,6 +4,9 @@ sequence = require 'when/sequence'
 
 module.exports = (Preparator, decoratedFn) -> 
 
+    seq = 0
+    _id = seq
+
     if typeof Preparator != 'object' or Preparator instanceof Array
 
         throw new Error 'also.inject.async(Preparator, decoratedFn) requires Preparator as object'
@@ -11,13 +14,12 @@ module.exports = (Preparator, decoratedFn) ->
     do (
 
         context = -> 
-        beforeAllDone =false
+        beforeAllDone = false
 
     ) -> 
 
         context.signature  = argsOf decoratedFn
-        context.first      = []
-        context.last       = []
+        queue              = []
 
         beforeAll = -> 
 
@@ -52,6 +54,35 @@ module.exports = (Preparator, decoratedFn) ->
             return defer.promise
 
 
+        Object.defineProperty context, 'args',      
+            enumerable: true
+            get: -> 
+                queue[_id].args
+
+        Object.defineProperty context, 'defer', 
+            enumerable: true
+            get: -> 
+                #
+                # getting the defer property activates 
+                # alternate deferral injectinon, 
+                # 
+                # done fn will no longer be injected as 
+                # arg1 into the decoratedFn
+                #
+                queue[_id].altDefer = true
+                queue[_id].defer
+
+         Object.defineProperty context, 'first', 
+            enumerable: true
+            get: -> 
+                queue[_id].first
+
+        Object.defineProperty context, 'last', 
+            enumerable: true
+            get: -> 
+                queue[_id].last
+
+
         return ->  
 
             #
@@ -63,10 +94,19 @@ module.exports = (Preparator, decoratedFn) ->
             # * also append to, from context.last (array)
             # 
 
-            inject = []
-            inject.push arg for arg in arguments
+            id   = seq++
+            args = []
+            args.push arg for arg in arguments
 
-            finished = Defer()
+            queue[id] = 
+                done:      false
+                defer:     Defer()
+                altDefer:  false
+                first:     []
+                last:      []
+                args:      args
+
+            finished  = Defer()
 
             beforeEach = -> 
 
@@ -74,32 +114,39 @@ module.exports = (Preparator, decoratedFn) ->
                 return defer.resolve() unless (
 
                     Preparator.beforeEach? and 
-                    typeof Preparator.beforeEach is 'function'
+                    typeof Preparator.beforeEach is 'function'   
 
                 )
 
                 done = (result) ->
-
+                    _id = id
                     finished.notify beforeEach: result
                     return defer.reject result if result instanceof Error
                     return defer.resolve result
 
+                _id = id
                 Preparator.beforeEach done, context
                 return defer.promise
 
 
             callDecoratedFn = -> 
-            
-                defer = Defer()
 
-                decoratedFn.apply null, [ (result) ->
+                _id = id
+                if queue[id].altDefer
 
-                    finished.notify result: result
-                    return defer.reject result if result instanceof Error
-                    return defer.resolve result
+                    decoratedFn.apply null, queue[id].first.concat( args ).concat queue[id].last
 
-                ].concat context.first.concat( inject ).concat context.last
-                return defer.promise
+                else
+
+                    decoratedFn.apply null, [ (result) ->
+
+                        finished.notify result: result
+                        return queue[id].defer.reject result if result instanceof Error
+                        return queue[id].defer.resolve result
+
+                    ].concat queue[id].first.concat( args ).concat queue[id].last
+
+                return queue[id].defer.promise
 
 
             afterEach = -> 
@@ -113,11 +160,13 @@ module.exports = (Preparator, decoratedFn) ->
                 )
 
                 done = (result) ->
-
+                    _id = id
+                    queue[id].done = true
                     finished.notify afterEach: result
                     return defer.reject result if result instanceof Error
                     return defer.resolve result
 
+                _id = id
                 Preparator.afterEach done, context
                 return defer.promise
 
@@ -146,9 +195,6 @@ module.exports = (Preparator, decoratedFn) ->
 
             )
 
-            finished.promise
-
-
-        
+            return finished.promise
 
 
