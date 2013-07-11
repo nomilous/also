@@ -383,3 +383,43 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 test done
 
 
+    context 'parallel', (it) -> 
+
+        it 'can be set to false to run calls in sequence', (done) -> 
+
+            #
+            # the tricky bit...
+            #
+
+            throw 'pending'
+
+            count   = 0
+
+            fn = Async
+
+                parallel: false
+
+                beforeEach: (done) -> 
+
+                    console.log before: count
+                    done()
+
+                afterEach: (done) -> 
+
+                    console.log after: count
+                    done()
+
+                (done, count) -> 
+
+                    console.log run: count
+                    done()
+
+            fn ++count
+            fn ++count
+            fn ++count
+            fn ++count
+
+           
+
+
+

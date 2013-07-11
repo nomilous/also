@@ -11,6 +11,8 @@ module.exports = (Preparator, decoratedFn) ->
 
         throw new Error 'also.inject.async(Preparator, decoratedFn) requires Preparator as object'
 
+    Preparator.parallel = true unless Preparator.parallel?
+
     do (
 
         context = -> 
@@ -20,6 +22,8 @@ module.exports = (Preparator, decoratedFn) ->
 
         context.signature  = argsOf decoratedFn
         queue              = []
+        calls              = []
+
 
         queueLength = -> 
             length = 0
@@ -96,7 +100,7 @@ module.exports = (Preparator, decoratedFn) ->
         
 
 
-        return ->  
+        calls.push ->  
 
             #
             # insert external arguments into the pending injection array
@@ -210,4 +214,4 @@ module.exports = (Preparator, decoratedFn) ->
 
             return finished.promise
 
-
+        return calls.shift()
