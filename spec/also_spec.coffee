@@ -11,24 +11,24 @@ require('nez').realize 'Also', (also, test, context) ->
 
                 function: async 
 
-                    beforeAll: (done) -> 
+                    beforeAll: (done, context) -> 
 
-                        console.log 'beforeAll'
+                        console.log 'beforeAll with pending calls', context.queue.length
                         done()
 
-                    beforeEach: (done, inject) -> 
+                    beforeEach: (done, context) -> 
 
-                        inject.first[0] = RESOLVE: inject.defer.resolve
-                        console.log 'beforeEach'
+                        context.first[0] = RESOLVE: context.defer.resolve
+                        #console.log 'beforeEach'
                         done()
 
-                    afterEach: (done) -> 
+                    afterEach: (done, context) -> 
 
-                        console.log 'afterEach'
                         done()
+                        console.log 'afterEach with remaining calls', context.queue.length
 
 
-                    (done, count, last) -> 
+                    (done, count) -> 
 
                         console.log 'function', count
                         done.RESOLVE()
@@ -44,6 +44,18 @@ require('nez').realize 'Also', (also, test, context) ->
             object.function( 7 )
             object.function( 8 )
             object.function( 9 )
+            object.function( 10 ).then -> 
+
+                object.function( 11 )
+                object.function( 12 )
+                object.function( 13 )
+                object.function( 14 )
+                object.function( 15 )
+                object.function( 16 )
+                object.function( 17 )
+                object.function( 18 )
+                object.function( 19 )
+                object.function( 20 )
 
 
         it 'ducks', (done) -> 

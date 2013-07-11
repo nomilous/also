@@ -21,26 +21,17 @@ module.exports = (Preparator, decoratedFn) ->
         context.signature  = argsOf decoratedFn
         queue              = []
 
-        debug = -> 
-            console.log 'queue length:', ( ->
-
-                #
-                # possible usage as afterAll hook??
-                #
-
-                length = 0
-                for it in queue
-                    length++ unless it.done
-                length
-            )() 
+        queueLength = -> 
+            length = 0
+            for item in queue
+                length++ unless item.done
+            length
 
         beforeAll = -> 
 
             #
             # TODO: done once part can be factored out as also.once(fn) decorator
             # 
-
-            debug()
 
             defer = Defer()
             return defer.resolve() if beforeAllDone
@@ -96,6 +87,13 @@ module.exports = (Preparator, decoratedFn) ->
             enumerable: true
             get: -> 
                 queue[_id].last
+
+
+        Object.defineProperty context, 'queue', 
+            enumerable: true
+            get: -> 
+                length: queueLength()
+        
 
 
         return ->  
@@ -178,7 +176,6 @@ module.exports = (Preparator, decoratedFn) ->
                     _id = id
                     queue[id].done = true
                     finished.notify afterEach: result
-                    debug()
                     return defer.reject result if result instanceof Error
                     return defer.resolve result
 
