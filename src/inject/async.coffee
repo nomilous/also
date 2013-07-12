@@ -176,7 +176,7 @@ module.exports = (Preparator, decoratedFn) ->
                     defer = Defer()
 
                     unless typeof Preparator.afterEach is 'function'
-                    
+
                         queue[id].done = true
                         defer.resolve()
                         afterAll() if queueLength() == 0
@@ -191,7 +191,6 @@ module.exports = (Preparator, decoratedFn) ->
                         else
                             defer.resolve result
                         afterAll() if queueLength() == 0
-
                     
                     Preparator.afterEach done, context
                     return defer.promise
