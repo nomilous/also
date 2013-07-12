@@ -7,7 +7,7 @@ also
 
 An accumulating set of function decorators. <br />
 
-I discovered function decorators in this book: [Coffeescript Ristretto](https://leanpub.com/coffeescript-ristretto)
+Function decorators?: [Coffeescript Ristretto](https://leanpub.com/coffeescript-ristretto)
 
 
 Examples

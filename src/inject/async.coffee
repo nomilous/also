@@ -21,7 +21,8 @@ module.exports = (Preparator, decoratedFn) ->
     ) -> 
 
         context.signature  = argsOf decoratedFn
-        queue              = []   # TODO: reset (nothing is clearing this out, done flag is being set)
+        queue              = []   
+        console.log 'TODO: reset queue (nothing is clearing this out, done flag is being set)'
         calls              = []
         running            = false
 
