@@ -23,12 +23,17 @@ module.exports = (Preparator, decoratedFn) ->
         context.signature  = argsOf decoratedFn
         queue              = []
         calls              = []
+        running            = false
 
 
         queueLength = -> 
             length = 0
-            for item in queue
-                length++ unless item.done
+            if Preparator.parallel
+                for item in queue
+                    length++ unless item.done
+            else
+                for call in calls
+                    length++
             length
 
         beforeAll = -> 
@@ -100,118 +105,157 @@ module.exports = (Preparator, decoratedFn) ->
         
 
 
-        calls.push ->  
+        return ->
+
+            finished = Defer()
+
+            fn = (finished, args) ->
+
+                id   = seq++
+                inject = []
+                inject.push arg for arg in args
+
+                queue[id] = 
+                    done:      false
+                    defer:     Defer()
+                    altDefer:  false
+                    first:     []
+                    last:      []
+                    args:      inject  
+
+                beforeEach = -> 
+
+                    defer = Defer()
+                    return defer.resolve() unless (
+
+                        Preparator.beforeEach? and 
+                        typeof Preparator.beforeEach is 'function'   
+
+                    )
+
+                    done = (result) ->
+                        _id = id
+                        finished.notify beforeEach: result
+                        return defer.reject result if result instanceof Error
+                        return defer.resolve result
+
+                    _id = id
+                    Preparator.beforeEach done, context
+                    return defer.promise
+
+
+                callDecoratedFn = -> 
+
+                    _id = id
+                    if queue[id].altDefer
+
+                        decoratedFn.apply null, queue[id].first.concat( inject ).concat queue[id].last
+
+                    else
+
+                        decoratedFn.apply null, [ (result) ->
+
+                            finished.notify result: result
+                            return queue[id].defer.reject result if result instanceof Error
+                            return queue[id].defer.resolve result
+
+                        ].concat queue[id].first.concat( inject ).concat queue[id].last
+
+                    return queue[id].defer.promise
+
+
+                afterEach = -> 
+
+                    defer = Defer()
+                    return defer.resolve() unless (
+
+                        Preparator.afterEach? and 
+                        typeof Preparator.afterEach is 'function'
+
+                    )
+
+                    done = (result) ->
+                        _id = id
+                        queue[id].done = true
+                        finished.notify afterEach: result
+                        return defer.reject result if result instanceof Error
+                        return defer.resolve result
+
+                    _id = id
+                    Preparator.afterEach done, context
+                    return defer.promise
+
+                sequence([
+
+                    beforeAll
+                    beforeEach
+                    callDecoratedFn
+                    afterEach
+
+                ]).then(
+
+                    (results) -> 
+
+                        # [0] beforeAll result
+                        # [1] beforeEach result
+                        finished.resolve results[2]
+                        # [3] afterEach result
+
+                    (error) -> 
+
+                        Preparator.error error if Preparator.error instanceof Function
+                        done.reject error
+
+                    finished.notify
+
+                )
+
+                return finished.promise
+
+
+
+            unless Preparator.parallel
+
+                #
+                # calls to decoratedFn should run in sequence
+                # (each pended until the previous completes)
+                # 
+
+                calls.push 
+
+                    function:  fn
+                    finished:  finished
+                    arguments: arguments
+
+                run = -> 
+
+                    running = true
+                    call = calls.shift()
+
+                    unless call? 
+
+                        running = false
+                        return
+
+                    call.function( call.finished, call.arguments ).then(
+
+                        #
+                        # recurse on promise resolved 
+                        #
+
+                        -> run()
+                        -> run()
+                    )
+
+                run() unless running
+
+                return finished.promise
+
 
             #
-            # insert external arguments into the pending injection array
-            # 
-            # * these will be prepended with whatever is placed into
-            #   context.first (array) by the beforeAll/Each
-            # 
-            # * also append to, from context.last (array)
-            # 
+            # calls to decoratedFn run in parallel
+            #
 
-            id   = seq++
-            args = []
-            args.push arg for arg in arguments
+            return fn finished, arguments if Preparator.parallel
 
-            queue[id] = 
-                done:      false
-                defer:     Defer()
-                altDefer:  false
-                first:     []
-                last:      []
-                args:      args
-
-            finished  = Defer()
-
-            beforeEach = -> 
-
-                defer = Defer()
-                return defer.resolve() unless (
-
-                    Preparator.beforeEach? and 
-                    typeof Preparator.beforeEach is 'function'   
-
-                )
-
-                done = (result) ->
-                    _id = id
-                    finished.notify beforeEach: result
-                    return defer.reject result if result instanceof Error
-                    return defer.resolve result
-
-                _id = id
-                Preparator.beforeEach done, context
-                return defer.promise
-
-
-            callDecoratedFn = -> 
-
-                _id = id
-                if queue[id].altDefer
-
-                    decoratedFn.apply null, queue[id].first.concat( args ).concat queue[id].last
-
-                else
-
-                    decoratedFn.apply null, [ (result) ->
-
-                        finished.notify result: result
-                        return queue[id].defer.reject result if result instanceof Error
-                        return queue[id].defer.resolve result
-
-                    ].concat queue[id].first.concat( args ).concat queue[id].last
-
-                return queue[id].defer.promise
-
-
-            afterEach = -> 
-
-                defer = Defer()
-                return defer.resolve() unless (
-
-                    Preparator.afterEach? and 
-                    typeof Preparator.afterEach is 'function'
-
-                )
-
-                done = (result) ->
-                    _id = id
-                    queue[id].done = true
-                    finished.notify afterEach: result
-                    return defer.reject result if result instanceof Error
-                    return defer.resolve result
-
-                _id = id
-                Preparator.afterEach done, context
-                return defer.promise
-
-            sequence([
-
-                beforeAll
-                beforeEach
-                callDecoratedFn
-                afterEach
-
-            ]).then(
-
-                (results) -> 
-
-                    # [0] beforeAll result
-                    # [1] beforeEach result
-                    finished.resolve results[2]
-                    # [3] afterEach result
-
-                (error) -> 
-
-                    Preparator.error error if Preparator.error instanceof Function
-                    done.reject error
-
-                finished.notify
-
-            )
-
-            return finished.promise
-
-        return calls.shift()
+            

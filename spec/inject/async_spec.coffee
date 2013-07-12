@@ -369,7 +369,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 afterEach: (done) -> 
 
                     counts.push count
-                    test done
+                    done()
 
                 (done) -> 
 
@@ -391,35 +391,29 @@ require('nez').realize 'Async', (Async, test, context, should) ->
             # the tricky bit...
             #
 
-            throw 'pending'
+            RAN = []
 
-            count   = 0
-
-            fn = Async
+            fn  = Async
 
                 parallel: false
 
-                beforeEach: (done) -> 
+                beforeEach: (done, context) -> 
 
-                    console.log before: count
+                    console.log 'queue length:', context.queue.length
+                    console.log 'args', context.args
+                    done()
+                    
+
+                (done, num) -> 
+
+                    RAN.push num
                     done()
 
-                afterEach: (done) -> 
-
-                    console.log after: count
-                    done()
-
-                (done, count) -> 
-
-                    console.log run: count
-                    done()
-
-            fn ++count
-            fn ++count
-            fn ++count
-            fn ++count
-
-           
-
-
+            fn( 1 ).then -> RAN.should.eql [1]
+            fn( 2 ).then -> RAN.should.eql [1,2]
+            fn( 3 ).then -> RAN.should.eql [1,2,3]
+            fn( 4 ).then -> RAN.should.eql [1,2,3,4]
+            fn( 5 ).then -> 
+                #console.log RAN
+                test done
 
