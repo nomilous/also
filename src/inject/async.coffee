@@ -36,6 +36,7 @@ module.exports = (Preparator, decoratedFn) ->
                     length++
             length
 
+
         beforeAll = -> 
 
             #
@@ -44,13 +45,7 @@ module.exports = (Preparator, decoratedFn) ->
 
             defer = Defer()
             return defer.resolve() if beforeAllDone
-            return defer.resolve() unless (
-
-                Preparator.beforeAll? and 
-                typeof Preparator.beforeAll is 'function'
-
-            )
-
+            return defer.resolve() unless typeof Preparator.beforeAll is 'function'
             beforeAllDone = true
 
             #
@@ -69,10 +64,26 @@ module.exports = (Preparator, decoratedFn) ->
             return defer.promise
 
 
+        afterAll = -> 
+
+            defer = Defer()
+            return defer.resolve() unless typeof Preparator.afterAll is 'function'
+
+            done = (result) ->
+                _id = -1
+  
+                return defer.reject result if result instanceof Error
+                return defer.resolve result
+            
+            _id = -1
+            Preparator.afterAll done, context
+            return defer.promise
+
+
         Object.defineProperty context, 'args',      
             enumerable: true
             get: -> 
-                queue[_id].args
+                try queue[_id].args
 
         Object.defineProperty context, 'defer', 
             enumerable: true
@@ -85,17 +96,17 @@ module.exports = (Preparator, decoratedFn) ->
                 # arg1 into the decoratedFn
                 #
                 queue[_id].altDefer = true
-                queue[_id].defer
+                try queue[_id].defer
 
          Object.defineProperty context, 'first', 
             enumerable: true
             get: -> 
-                queue[_id].first
+                try queue[_id].first
 
         Object.defineProperty context, 'last', 
             enumerable: true
             get: -> 
-                queue[_id].last
+                try queue[_id].last
 
 
         Object.defineProperty context, 'queue', 
@@ -126,12 +137,7 @@ module.exports = (Preparator, decoratedFn) ->
                 beforeEach = -> 
 
                     defer = Defer()
-                    return defer.resolve() unless (
-
-                        Preparator.beforeEach? and 
-                        typeof Preparator.beforeEach is 'function'   
-
-                    )
+                    return defer.resolve() unless typeof Preparator.beforeEach is 'function'
 
                     done = (result) ->
                         _id = id
@@ -166,22 +172,27 @@ module.exports = (Preparator, decoratedFn) ->
 
                 afterEach = -> 
 
+                    _id   = id
                     defer = Defer()
-                    return defer.resolve() unless (
 
-                        Preparator.afterEach? and 
-                        typeof Preparator.afterEach is 'function'
-
-                    )
+                    unless typeof Preparator.afterEach is 'function'
+                    
+                        queue[id].done = true
+                        defer.resolve()
+                        afterAll() if queueLength() == 0
+                        return
 
                     done = (result) ->
                         _id = id
                         queue[id].done = true
                         finished.notify afterEach: result
-                        return defer.reject result if result instanceof Error
-                        return defer.resolve result
+                        if result instanceof Error
+                            defer.reject result 
+                        else
+                            defer.resolve result
+                        afterAll() if queueLength() == 0
 
-                    _id = id
+                    
                     Preparator.afterEach done, context
                     return defer.promise
 
@@ -230,7 +241,7 @@ module.exports = (Preparator, decoratedFn) ->
                 run = -> 
 
                     running = true
-                    call = calls.shift()
+                    call = calls.shift() 
 
                     unless call? 
 

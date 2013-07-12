@@ -382,8 +382,8 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 counts.should.eql [11,12,13]
                 test done
 
-
-    context 'parallel', (it) -> 
+    
+    context 'Preparator.parallel', (it) -> 
 
         it 'can be set to false to run calls in sequence', (done) -> 
 
@@ -399,10 +399,17 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
                 beforeEach: (done, context) -> 
 
-                    console.log 'queue length:', context.queue.length
-                    console.log 'args', context.args
+                    # console.log BEFORE: 
+                    #     queue: context.queue.length
+                    #     args: context.args
                     done()
-                    
+
+                afterEach: (done, context) -> 
+  
+                    # console.log AFTER: 
+                    #     queue: context.queue.length
+                    #     args: context.args
+                    done()
 
                 (done, num) -> 
 
@@ -417,3 +424,61 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 #console.log RAN
                 test done
 
+    context 'Preparator.afterAll', (it) -> 
+
+        it 'runs after all with parallel true', (done) -> 
+
+            RAN   = []
+            COUNT = 0
+
+            fn  = Async
+
+                afterAll: (done) -> 
+
+                    RAN.should.eql [ 1, 2, 3, 4, 5 ]
+                    COUNT++
+                    done()
+
+                (done, num) -> 
+
+                    RAN.push num
+                    done()
+
+            fn 1
+            fn 2
+            fn 3
+            fn( 4 ).then -> 
+
+                COUNT.should.equal 1
+                test done
+
+            fn 5
+
+        it 'runs after all with parallel false', (done) -> 
+
+            RAN   = []
+            COUNT = 0
+
+            fn  = Async
+
+                parallel: false
+
+                afterAll: (done) -> 
+
+                    RAN.should.eql [ 1, 2, 3, 4, 5 ]
+                    COUNT++
+                    done()
+
+                (done, num) -> 
+
+                    RAN.push num
+                    done()
+
+            fn 1
+            fn 2
+            fn 3
+            fn( 4 ).then -> COUNT.should.equal 0
+            fn( 5 ).then -> 
+
+                COUNT.should.equal 1
+                test done
