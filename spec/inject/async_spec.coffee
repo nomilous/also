@@ -433,6 +433,8 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
             fn  = Async
 
+                afterEach: (done) -> done()
+
                 afterAll: (done) -> 
 
                     RAN.should.eql [ 1, 2, 3, 4, 5 ]
@@ -481,4 +483,6 @@ require('nez').realize 'Async', (Async, test, context, should) ->
             fn( 5 ).then -> 
 
                 COUNT.should.equal 1
+                # console.log COUNT
+                # console.log RAN
                 test done

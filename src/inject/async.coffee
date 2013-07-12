@@ -3,9 +3,9 @@ Defer    = require('when').defer
 sequence = require 'when/sequence'
 
 module.exports = (Preparator, decoratedFn) -> 
-
-    seq = 0
-    _id = seq
+    
+    seq  = 0
+    _id  = seq
 
     if typeof Preparator != 'object' or Preparator instanceof Array
 
@@ -71,7 +71,6 @@ module.exports = (Preparator, decoratedFn) ->
 
             done = (result) ->
                 _id = -1
-  
                 return defer.reject result if result instanceof Error
                 return defer.resolve result
             
@@ -174,13 +173,12 @@ module.exports = (Preparator, decoratedFn) ->
 
                     _id   = id
                     defer = Defer()
-
+                    
                     unless typeof Preparator.afterEach is 'function'
 
                         queue[id].done = true
-                        defer.resolve()
-                        afterAll() if queueLength() == 0
-                        return
+                        return afterAll() if queueLength() == 0
+                        return defer.resolve()
 
                     done = (result) ->
                         _id = id
