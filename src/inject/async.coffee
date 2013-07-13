@@ -22,10 +22,8 @@ module.exports = (Preparator, decoratedFn) ->
 
         context.signature  = argsOf decoratedFn
         queue              = []   
-        console.log 'TODO: reset queue (nothing is clearing this out, done flag is being set)'
         calls              = []
         running            = false
-
 
         queueLength = -> 
             length = 0
@@ -65,21 +63,6 @@ module.exports = (Preparator, decoratedFn) ->
             return defer.promise
 
 
-        afterAll = -> 
-
-            defer = Defer()
-            return defer.resolve() unless typeof Preparator.afterAll is 'function'
-
-            done = (result) ->
-                _id = -1
-                return defer.reject result if result instanceof Error
-                return defer.resolve result
-            
-            _id = -1
-            Preparator.afterAll done, context
-            return defer.promise
-
-
         Object.defineProperty context, 'args',      
             enumerable: true
             get: -> 
@@ -113,7 +96,7 @@ module.exports = (Preparator, decoratedFn) ->
             enumerable: true
             get: -> 
                 length: queueLength()
-        
+                elements: queue
 
 
         return ->
@@ -175,23 +158,43 @@ module.exports = (Preparator, decoratedFn) ->
                     _id   = id
                     defer = Defer()
                     
-                    unless typeof Preparator.afterEach is 'function'
-
-                        queue[id].done = true
-                        return afterAll() if queueLength() == 0
-                        return defer.resolve()
+                    return defer.resolve() unless typeof Preparator.afterEach is 'function'
 
                     done = (result) ->
                         _id = id
-                        queue[id].done = true
                         finished.notify afterEach: result
-                        if result instanceof Error
-                            defer.reject result 
-                        else
-                            defer.resolve result
-                        afterAll() if queueLength() == 0
+                        return defer.reject result if result instanceof Error
+                        return defer.resolve result
                     
                     Preparator.afterEach done, context
+                    return defer.promise
+
+
+                afterAll = -> 
+
+                    _id   = id
+                    defer = Defer()
+                    queue[id].done = true
+
+                    return defer.resolve() unless queueLength() == 0
+                    unless typeof Preparator.afterAll is 'function'
+
+                        #
+                        # reset queue
+                        #
+
+                        queue.length = 0
+                        return defer.resolve() 
+
+
+                    done = (result) ->
+                        _id = -1
+                        queue.length = 0
+                        return defer.reject result if result instanceof Error
+                        return defer.resolve result
+                    
+                    _id = -1
+                    Preparator.afterAll done, context
                     return defer.promise
 
                 sequence([
@@ -200,6 +203,7 @@ module.exports = (Preparator, decoratedFn) ->
                     beforeEach
                     callDecoratedFn
                     afterEach
+                    afterAll
 
                 ]).then(
 
