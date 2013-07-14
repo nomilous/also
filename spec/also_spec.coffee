@@ -94,7 +94,7 @@ require('nez').realize 'Also', (also, test, context) ->
                 parallel: false
                 timeout: 100
                 error: (error, context) -> 
-                    console.log error
+                    #console.log error
                     # console.log 
                     #     error: error 
                     #     element: context.queue.elements[context.queue.current]
@@ -106,10 +106,18 @@ require('nez').realize 'Also', (also, test, context) ->
             fn()
             fn().then(
                 (result) -> 
-                (error)  -> console.log ERROR: error; test done
+                (error)  -> 
+                    error.should.match /timeout/
+                    test done
                 (notify) -> 
             )
 
+        it 'preparator as optional', (done) -> 
+
+            fn = async (done) -> done 1
+            fn().then (result) -> 
+                result.should.equal 1
+                test done
 
         it 'ducks', (done) -> 
 

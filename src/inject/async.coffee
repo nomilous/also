@@ -7,6 +7,11 @@ module.exports = (Preparator, decoratedFn) ->
     seq  = 0
     _id  = seq
 
+    if typeof Preparator == 'function' and typeof decoratedFn == 'undefined'
+
+        decoratedFn = Preparator
+        Preparator = {}   
+
     if typeof Preparator != 'object' or Preparator instanceof Array
 
         throw new Error 'also.inject.async(Preparator, decoratedFn) requires Preparator as object'
@@ -16,7 +21,7 @@ module.exports = (Preparator, decoratedFn) ->
     do (
 
         context = -> 
-        beforeAllDone = false
+        beforeAllDone = false 
 
     ) -> 
 
@@ -37,10 +42,6 @@ module.exports = (Preparator, decoratedFn) ->
 
 
         beforeAll = -> 
-
-            #
-            # TODO: done once part can be factored out as also.once(fn) decorator
-            # 
 
             defer = Defer()
             return defer.resolve() if beforeAllDone
@@ -113,10 +114,8 @@ module.exports = (Preparator, decoratedFn) ->
                 done = (result) ->
 
                     _id = id
-                    
-                    if result instanceof Error
-                        clearTimeout queue[id].timeout
-                        return queue[id].defer.reject result
+                    clearTimeout queue[id].timeout if Preparator.timeout?    
+                    return queue[id].defer.reject result if result instanceof Error
                     finished.notify result: result
                     return queue[id].defer.resolve result
 
@@ -127,7 +126,9 @@ module.exports = (Preparator, decoratedFn) ->
                     first:     []
                     last:      []
                     args:      inject
-                    timeout:   setTimeout (->
+                
+                if Preparator.timeout?
+                    queue[id].timeout = setTimeout (->
 
                         finished.notify 
                             error: 
@@ -136,7 +137,7 @@ module.exports = (Preparator, decoratedFn) ->
 
                         done new Error 'timeout'
 
-                    ), Preparator.timeout || 2000
+                    ), Preparator.timeout 
 
                 beforeEach = -> 
 
@@ -190,7 +191,7 @@ module.exports = (Preparator, decoratedFn) ->
                     _id   = id
                     defer = Defer()
                     queue[id].done = true
-                    clearTimeout queue[id].timeout
+                    clearTimeout queue[id].timeout if Preparator.timeout?
 
                     return defer.resolve() unless queueLength() == 0
                     unless typeof Preparator.afterAll is 'function'
