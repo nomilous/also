@@ -109,13 +109,33 @@ module.exports = (Preparator, decoratedFn) ->
                 inject = []
                 inject.push arg for arg in args
 
+                done = (result) ->
+
+                    _id = id
+                    finished.notify result: result
+                    if result instanceof Error
+                        clearTimeout queue[id].timeout
+                        return queue[id].defer.reject result 
+                    return queue[id].defer.resolve result
+
                 queue[id] = 
                     done:      false
                     defer:     Defer()
                     altDefer:  false
                     first:     []
                     last:      []
-                    args:      inject  
+                    args:      inject
+                    timeout:   setTimeout (->
+
+                        finished.notify 
+                            error: 
+                                context: context
+                            element: 
+                                queue[id]
+
+                        done new Error 'timeout'
+
+                    ), Preparator.timeout || 2000
 
                 beforeEach = -> 
 
@@ -142,13 +162,7 @@ module.exports = (Preparator, decoratedFn) ->
 
                     else
 
-                        decoratedFn.apply null, [ (result) ->
-
-                            finished.notify result: result
-                            return queue[id].defer.reject result if result instanceof Error
-                            return queue[id].defer.resolve result
-
-                        ].concat queue[id].first.concat( inject ).concat queue[id].last
+                        decoratedFn.apply null, [ done ].concat queue[id].first.concat( inject ).concat queue[id].last
 
                     return queue[id].defer.promise
 
@@ -175,6 +189,7 @@ module.exports = (Preparator, decoratedFn) ->
                     _id   = id
                     defer = Defer()
                     queue[id].done = true
+                    clearTimeout queue[id].timeout
 
                     return defer.resolve() unless queueLength() == 0
                     unless typeof Preparator.afterAll is 'function'
@@ -217,7 +232,7 @@ module.exports = (Preparator, decoratedFn) ->
                     (error) -> 
 
                         Preparator.error error if Preparator.error instanceof Function
-                        done.reject error
+                        finished.reject error
 
                     finished.notify
 
