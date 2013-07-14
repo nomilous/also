@@ -97,6 +97,7 @@ module.exports = (Preparator, decoratedFn) ->
             get: -> 
                 length: queueLength()
                 elements: queue
+                current: _id
 
 
         return ->
@@ -112,10 +113,11 @@ module.exports = (Preparator, decoratedFn) ->
                 done = (result) ->
 
                     _id = id
-                    finished.notify result: result
+                    
                     if result instanceof Error
                         clearTimeout queue[id].timeout
-                        return queue[id].defer.reject result 
+                        return queue[id].defer.reject result
+                    finished.notify result: result
                     return queue[id].defer.resolve result
 
                 queue[id] = 
@@ -130,8 +132,7 @@ module.exports = (Preparator, decoratedFn) ->
                         finished.notify 
                             error: 
                                 context: context
-                            element: 
-                                queue[id]
+                                element: queue[id]
 
                         done new Error 'timeout'
 
@@ -230,8 +231,8 @@ module.exports = (Preparator, decoratedFn) ->
                         # [3] afterEach result
 
                     (error) -> 
-
-                        Preparator.error error if Preparator.error instanceof Function
+                        _id = id
+                        Preparator.error error, context if Preparator.error instanceof Function
                         finished.reject error
 
                     finished.notify

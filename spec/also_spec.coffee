@@ -93,7 +93,11 @@ require('nez').realize 'Also', (also, test, context) ->
             fn = async 
                 parallel: false
                 timeout: 100
-                error: (error) -> console.log error
+                error: (error, context) -> 
+                    console.log error
+                    # console.log 
+                    #     error: error 
+                    #     element: context.queue.elements[context.queue.current]
                 (done) -> 
 
             fn()
@@ -101,9 +105,9 @@ require('nez').realize 'Also', (also, test, context) ->
             fn()
             fn()
             fn().then(
-                -> 
-                (error)  -> test done
-                (notify) -> #console.log notify
+                (result) -> 
+                (error)  -> console.log ERROR: error; test done
+                (notify) -> 
             )
 
 
