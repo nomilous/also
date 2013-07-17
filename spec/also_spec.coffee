@@ -13,7 +13,7 @@ require('nez').realize 'Also', (also, test, context) ->
 
                 beforeAll: (done, context) -> 
 
-                    #console.log 'BEFORE_ALL with pending calls', context.queue.length
+                    #console.log 'BEFORE_ALL with pending calls', context.queue.elements.length
                     done()
 
                 beforeEach: (done, context) -> 
@@ -22,7 +22,7 @@ require('nez').realize 'Also', (also, test, context) ->
                     # inject resolver as last arg
                     #
                     # context.last[0] = context.defer.resolve
-                    #console.log 'beforeEach with pending calls', context.queue.length
+                    #console.log 'beforeEach with pending calls', context.queue.remaining
                     context.last[1] = context.defer.resolve
                     done()
 
@@ -35,7 +35,7 @@ require('nez').realize 'Also', (also, test, context) ->
                 afterAll: (done, context) -> 
 
                     #console.log context.queue.elements
-                    #console.log 'AFTER_ALL with remaining calls', context.queue.length
+                    #console.log 'AFTER_ALL with remaining calls', context.queue.remaining
                     done()
 
 

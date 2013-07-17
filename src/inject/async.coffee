@@ -30,7 +30,7 @@ module.exports = (Preparator, decoratedFn) ->
         calls              = []
         running            = false
 
-        queueLength = -> 
+        queueRemainingLength = -> 
             length = 0
             if Preparator.parallel
                 for item in queue
@@ -96,7 +96,7 @@ module.exports = (Preparator, decoratedFn) ->
         Object.defineProperty context, 'queue', 
             enumerable: true
             get: -> 
-                length: queueLength()
+                remaining: queueRemainingLength()
                 elements: queue
                 current: _id
 
@@ -193,7 +193,7 @@ module.exports = (Preparator, decoratedFn) ->
                     queue[id].done = true
                     clearTimeout queue[id].timeout if Preparator.timeout?
 
-                    return defer.resolve() unless queueLength() == 0
+                    return defer.resolve() unless queueRemainingLength() == 0
                     unless typeof Preparator.afterAll is 'function'
 
                         #
