@@ -118,7 +118,7 @@ module.exports = (Preparator, decoratedFn) ->
                 fnDone = (result) ->
 
                     _id = id
-                    clearTimeout queue[id].timeout if Preparator.timeout?    
+                    clearTimeout queue[id].timer if Preparator.timeout?    
                     return queue[id].defer.reject result if result instanceof Error
                     finished.notify result: result
                     return queue[id].defer.resolve result
@@ -134,7 +134,7 @@ module.exports = (Preparator, decoratedFn) ->
                 
                 if Preparator.timeout != 0
 
-                    queue[id].timeout = setTimeout (->
+                    queue[id].timer = setTimeout (->
 
                         #
                         # timeout generates notification, not error, to allow 
