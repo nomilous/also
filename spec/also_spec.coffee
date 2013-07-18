@@ -107,6 +107,7 @@ require('nez').realize 'Also', (also, test, context) ->
             fn().then(
                 (result) -> 
                 (error)  -> 
+                    console.log error
                     error.should.match /timeout/
                     test done
                 (notify) -> 

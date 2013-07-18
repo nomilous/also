@@ -16,6 +16,8 @@ module.exports = (Preparator, decoratedFn) ->
 
         throw new Error 'also.inject.async(Preparator, decoratedFn) requires Preparator as object'
 
+    Preparator.timeout  = 0 unless Preparator.timeout?
+
     Preparator.parallel = true unless Preparator.parallel?
 
     do (
@@ -127,7 +129,7 @@ module.exports = (Preparator, decoratedFn) ->
                     last:      []
                     args:      inject
                 
-                if Preparator.timeout?
+                if Preparator.timeout != 0
                     queue[id].timeout = setTimeout (->
 
                         finished.notify 
