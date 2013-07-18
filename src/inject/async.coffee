@@ -205,7 +205,7 @@ module.exports = (Preparator, decoratedFn) ->
                     _id   = id
                     defer = Defer()
                     queue[id].done = true
-                    clearTimeout queue[id].timeout if Preparator.timeout?
+                    clearTimeout queue[id].timer if Preparator.timeout?
 
                     return defer.resolve() unless queueRemainingLength() == 0
                     unless typeof Preparator.afterAll is 'function'
