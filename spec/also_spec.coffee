@@ -101,6 +101,11 @@ require('nez').realize 'Also', (also, test, context) ->
                 notify: (update, context) -> 
                     update.type.should.equal 'timeout'
                     test done
+
+                afterEach: (next, context) ->
+                    context.current.timeout.should.equal true
+                    next()
+                    test done
                         
                 (done) -> 
 

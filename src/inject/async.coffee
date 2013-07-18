@@ -101,6 +101,9 @@ module.exports = (Preparator, decoratedFn) ->
                 elements: queue
                 current: _id
 
+        Object.defineProperty context, 'current',
+            enumerable: true
+            get: -> queue[_id]
 
         return ->
 
@@ -122,6 +125,7 @@ module.exports = (Preparator, decoratedFn) ->
 
                 queue[id] = 
                     done:      false
+                    timeout:   false
                     defer:     Defer()
                     altDefer:  false
                     first:     []
@@ -136,6 +140,8 @@ module.exports = (Preparator, decoratedFn) ->
                         # timeout generates notification, not error, to allow 
                         # the sequence to still process the aftereach and afterall
                         #
+
+                        queue[id].timeout = true
 
                         queue[id].defer.notify
 
