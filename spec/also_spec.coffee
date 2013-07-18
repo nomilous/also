@@ -98,20 +98,13 @@ require('nez').realize 'Also', (also, test, context) ->
                     # console.log 
                     #     error: error 
                     #     element: context.queue.elements[context.queue.current]
+                notify: (update, context) -> 
+                    update.type.should.equal 'timeout'
+                    test done
+                        
                 (done) -> 
 
             fn()
-            fn()
-            fn()
-            fn()
-            fn().then(
-                (result) -> 
-                (error)  -> 
-                    console.log error
-                    error.should.match /timeout/
-                    test done
-                (notify) -> 
-            )
 
         it 'preparator as optional', (done) -> 
 

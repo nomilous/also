@@ -17,7 +17,6 @@ module.exports = (Preparator, decoratedFn) ->
         throw new Error 'also.inject.async(Preparator, decoratedFn) requires Preparator as object'
 
     Preparator.timeout  = 0 unless Preparator.timeout?
-
     Preparator.parallel = true unless Preparator.parallel?
 
     do (
@@ -113,7 +112,7 @@ module.exports = (Preparator, decoratedFn) ->
                 inject = []
                 inject.push arg for arg in args
 
-                done = (result) ->
+                fnDone = (result) ->
 
                     _id = id
                     clearTimeout queue[id].timeout if Preparator.timeout?    
@@ -130,14 +129,21 @@ module.exports = (Preparator, decoratedFn) ->
                     args:      inject
                 
                 if Preparator.timeout != 0
+
                     queue[id].timeout = setTimeout (->
 
-                        finished.notify 
-                            error: 
-                                context: context
-                                element: queue[id]
+                        #
+                        # timeout generates notification, not error, to allow 
+                        # the sequence to still process the aftereach and afterall
+                        #
 
-                        done new Error 'timeout'
+                        queue[id].defer.notify
+
+                            type: 'timeout'
+                            context: context
+                            element: queue[id]
+
+                        fnDone()
 
                     ), Preparator.timeout 
 
@@ -166,7 +172,7 @@ module.exports = (Preparator, decoratedFn) ->
 
                     else
 
-                        decoratedFn.apply null, [ done ].concat queue[id].first.concat( inject ).concat queue[id].last
+                        decoratedFn.apply null, [ fnDone ].concat queue[id].first.concat( inject ).concat queue[id].last
 
                     return queue[id].defer.promise
 
@@ -238,7 +244,10 @@ module.exports = (Preparator, decoratedFn) ->
                         Preparator.error error, context if Preparator.error instanceof Function
                         finished.reject error
 
-                    finished.notify
+                    (status) -> 
+                        _id = id
+                        Preparator.notify status, context if Preparator.notify instanceof Function
+                        finished.notify status
 
                 )
 
