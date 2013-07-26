@@ -216,24 +216,25 @@ require('nez').realize 'Async', (Async, test, context, should) ->
             cn = before: 0, during: 0
             fn = Async
 
-                beforeAll: (done) -> cn.before++; done()
-                -> 
+                beforeAll: (done) -> 
+                    cn.before++
+                    done()
+                beforeEach: (done, inject) -> 
+                    inject.args[0] = inject.defer.resolve
+                    done()
+                (done) -> 
                     cn.before.should.equal 1 # already
                     cn.during++
+                    done()
 
             fn()
             fn()
             fn()
             fn()
-            fn()
+            fn().then ->
             
-            setTimeout(
-                -> 
-                    cn.should.eql before: 1, during: 5
-                    test done
-
-                100
-            )
+                cn.should.eql before: 1, during: 5
+                test done
             
 
         it 'allows beforeAll to indicate failure into error handler', (done) -> 

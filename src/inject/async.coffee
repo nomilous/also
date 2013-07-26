@@ -174,11 +174,11 @@ module.exports = (Preparator, decoratedFn) ->
                     _id = id
                     if queue[id].altDefer
 
-                        decoratedFn.apply null, queue[id].first.concat( inject ).concat queue[id].last
+                        decoratedFn.apply this, queue[id].first.concat( inject ).concat queue[id].last
 
                     else
 
-                        decoratedFn.apply null, [ fnDone ].concat queue[id].first.concat( inject ).concat queue[id].last
+                        decoratedFn.apply this, [ fnDone ].concat queue[id].first.concat( inject ).concat queue[id].last
 
                     return queue[id].defer.promise
 
