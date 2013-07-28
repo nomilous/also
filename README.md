@@ -60,3 +60,9 @@ start = sync nodeModules, (crypto, zlib, net) ->
 start()
 
 ```
+
+todo
+----
+
+* combine with Notice (hub) and run as daemon (script server for drone farm)
+
