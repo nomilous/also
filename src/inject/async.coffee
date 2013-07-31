@@ -137,19 +137,40 @@ module.exports = (Preparator, decoratedFn) ->
                     queue[id].timer = setTimeout (->
 
                         #
-                        # timeout generates notification, not error, to allow 
-                        # the sequence to still process the aftereach and afterall
+                        # timeout as special case error, does not reject any promises
+                        # but instead calls onTimeout, if defined
+                        # 
+                        # onTimeout is provided a resolver (done) as agr1, and should call
+                        # call it when done handling the timeout
                         #
 
-                        queue[id].timeout = true
+                        # queue[id].timeout = true
+                        # queue[id].defer.notify
+                        #     type: 'timeout'
+                        #     context: context
+                        #     element: queue[id]
 
-                        queue[id].defer.notify
+                        if typeof Preparator.onTimeout == 'function' 
 
-                            type: 'timeout'
-                            context: context
-                            element: queue[id]
+                            Preparator.onTimeout fnDone, 
 
-                        fnDone()
+                                type: 'fn'
+
+                                # 
+                                # later, before and after hooks can timout too
+                                # 
+                                # type: 'beforeAll'
+                                # type: 'beforeEach'
+                                # type: 'afterEach'
+                                # type: 'afterAll'
+                                # 
+
+                                context
+
+
+                        else
+
+                            fnDone()
 
                     ), Preparator.timeout 
 
@@ -247,12 +268,12 @@ module.exports = (Preparator, decoratedFn) ->
 
                     (error) -> 
                         _id = id
-                        Preparator.error error, context if Preparator.error instanceof Function
+                        Preparator.onError error, context if Preparator.onError instanceof Function
                         finished.reject error
 
                     (status) -> 
                         _id = id
-                        Preparator.notify status, context if Preparator.notify instanceof Function
+                        Preparator.onNotify status, context if Preparator.onNotify instanceof Function
                         finished.notify status
 
                 )

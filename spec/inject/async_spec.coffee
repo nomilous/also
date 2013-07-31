@@ -1,7 +1,6 @@
 should = require 'should'
 Async  = require '../../lib/inject/async'
 
-
 context 'Preparator type', ->
 
     it 'cannot be Function', (done) -> 
@@ -243,7 +242,7 @@ context 'Preparator.beforeAll()', ->
         fn = Async 
 
             beforeAll: (done) -> done( new Error 'beforeAll failed' )
-            error: (error) -> 
+            onError: (error) -> 
                 error.should.match /beforeAll failed/
                 done()
             -> console.log 'SHOULD NOT RUN'
@@ -567,17 +566,20 @@ context 'Preparator.afterAll', ->
             done()
 
 
-    it 'times out', (done) -> 
+    it 'calls onTimeout with resolver to allow handling timoeut in context', (done) -> 
 
         fn = Async 
             parallel: false
             timeout: 100
-            error: (error, context) -> 
-            notify: (update, context) -> 
+            onTimeout: (done, detail, context) -> 
 
-                update.type.should.equal 'timeout'
+                detail.type.should.equal 'fn'
                 done()
                     
             (done) -> 
 
-        fn()
+                #
+                # fn, does not call done
+                #
+
+        fn().then -> done()
