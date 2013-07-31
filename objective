@@ -1,9 +1,0 @@
-#!/usr/bin/env coffee
-
-require('nez').objective 'also', 
-
-    description: """
-
-    decorators
-
-    """, (requirement) -> 
