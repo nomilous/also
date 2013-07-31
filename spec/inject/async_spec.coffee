@@ -1,7 +1,11 @@
-require('nez').realize 'Async', (Async, test, context, should) -> 
+should = require 'should'
+Async  = require '../../lib/inject/async'
 
-    context 'Preparator type', (it) ->
+# require('nez').realize 'Async', (Async, test, context, should) -> 
 
+fn = ->
+
+    context 'Preparator type', ->
 
         it 'cannot be Function', (done) -> 
 
@@ -13,8 +17,9 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 }
 
             catch error
+
                 error.should.match /requires Preparator as object/
-                test done
+                done()
 
 
         it 'cannot be Array', (done) -> 
@@ -28,7 +33,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
             catch error
                 error.should.match /requires Preparator as object/
-                test done
+                done()
 
         it 'cannot be Number', (done) -> 
 
@@ -41,7 +46,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
             catch error
                 error.should.match /requires Preparator as object/
-                test done 
+                done()
 
         it 'cannot be String', (done) -> 
 
@@ -54,27 +59,24 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
             catch error
                 error.should.match /requires Preparator as object/
-                test done
+                done()
 
             
-        it 'must be object (Hash)', (done) -> 
-
-            preparator = {}
+        it 'preparator is optional', (done) -> 
 
             object = {
-                function: Async preparator, (args) -> test done
+                function: Async (args) -> done()
             }
 
             object.function()
 
 
-    context 'promise', (it) -> 
+    context 'promise', -> 
 
         it 'returns a promise', (done) -> 
 
-            should.exist (Async {}, -> )().then
-            #should.exist fn().then
-            test done
+            should.exist (Async -> )().then
+            done()
 
 
         it 'defaults passing the promise resolver / rejector as arg1', (done) -> 
@@ -97,7 +99,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
             fn2().then(
 
-                (result) -> result.should.equal 'RESULT'; test done
+                (result) -> result.should.equal 'RESULT'; done()
                 (error) ->
 
             )
@@ -122,7 +124,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                         { afterEach: 'AFTER_EACH_RESULT' }
 
                     ]
-                    test done
+                    done()
 
                 (error)  -> 
                 (notify) -> RESULTS.push notify
@@ -151,21 +153,21 @@ require('nez').realize 'Async', (Async, test, context, should) ->
             fn( 'A', 'B' ).then (result) -> 
 
                 result.should.equal 'RESULT: AB'
-                test done
+                done()
 
 
 
-    context 'Preparator.beforeAll()', (it) ->
+    context 'Preparator.beforeAll()', ->
 
 
         it 'is called', (done) -> 
 
             preparator = 
 
-                beforeAll: -> test done
+                beforeAll: -> done()
 
             object = {
-                function: Async preparator, (args) -> test done
+                function: Async preparator, (args) -> done()
             }
 
             object.function()
@@ -185,15 +187,15 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
                     setTimeout done, 150
 
-                (arg) -> 
+                (done, arg) -> 
 
                     #
                     # this was delayed
                     #
 
                     RUN = true
-                    arg.should.equal 'ARG'
-                    test done
+                    #arg.should.equal 'ARG'
+                    done()
 
             #
             # call and verify the delay
@@ -207,7 +209,9 @@ require('nez').realize 'Async', (Async, test, context, should) ->
             )
 
             setTimeout(
-                -> RUN.should.equal true
+                -> 
+                    RUN.should.equal true
+                    done()
                 200
             )
 
@@ -234,7 +238,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
             fn().then ->
             
                 cn.should.eql before: 1, during: 5
-                test done
+                done()
             
 
         it 'allows beforeAll to indicate failure into error handler', (done) -> 
@@ -244,7 +248,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 beforeAll: (done) -> done( new Error 'beforeAll failed' )
                 error: (error) -> 
                     error.should.match /beforeAll failed/
-                    test done
+                    done()
                 -> console.log 'SHOULD NOT RUN'
 
             fn()
@@ -259,21 +263,21 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                     context.first.push 'ALWAYS ARG ONE'
                     done()
 
-                 (arg1, arg2) -> 
+                 (done, arg1, arg2) -> 
 
                     arg1.should.equal 'ALWAYS ARG ONE'
                     arg2.should.equal 'another arg'
-                    test done
+                    done()
 
-            fn('another arg')
+            fn('another arg').then -> done()
 
-    context 'Preparator.beforeEach()', (it) -> 
+    context 'Preparator.beforeEach()', -> 
 
         it 'is called', (done) -> 
 
             fn = Async
 
-                beforeEach: -> test done
+                beforeEach: -> done()
                 ->
 
             fn()
@@ -292,7 +296,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 (arg) -> 
 
                     RUN = true
-                    test done
+                    done()
 
             fn('ARG')
 
@@ -328,13 +332,13 @@ require('nez').realize 'Async', (Async, test, context, should) ->
             setTimeout(
                 -> 
                     cn.should.eql before: 5, during: 5
-                    test done
+                    done()
 
                 100
             )
 
 
-    context 'Preparator.afterEach()', (it) ->
+    context 'Preparator.afterEach()', ->
 
         it 'runs after the call to decoratedFn', (done) ->
 
@@ -345,7 +349,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 afterEach: -> 
 
                     RAN_ALREADY.should.equal true
-                    test done
+                    done()
 
                 (done) -> 
 
@@ -357,34 +361,29 @@ require('nez').realize 'Async', (Async, test, context, should) ->
 
         it 'runs after each call', (done) -> 
 
-            count  = undefined
-            counts = []
+            count  = 0
 
             fn = Async
 
-                beforeAll: (done) -> 
-
-                    count = 10
-                    done()
-
                 afterEach: (done) -> 
-
-                    counts.push count
-                    done()
-
-                (done) -> 
 
                     count++
                     done()
 
+                (done) -> 
 
-            fn().then -> fn().then -> fn().then -> 
+                    done()
 
-                counts.should.eql [11,12,13]
-                test done
+
+            fn()
+            fn()
+            fn().then -> 
+
+                count.should.equal 3
+                done()
 
     
-    context 'Preparator.parallel', (it) -> 
+    context 'Preparator.parallel', -> 
 
         it 'can be set to false to run calls in sequence', (done) -> 
 
@@ -423,9 +422,9 @@ require('nez').realize 'Async', (Async, test, context, should) ->
             fn( 4 ).then -> RAN.should.eql [1,2,3,4]
             fn( 5 ).then -> 
                 #console.log RAN
-                test done
+                done()
 
-    context 'Preparator.afterAll', (it) -> 
+    context 'Preparator.afterAll', -> 
 
         it 'runs after all with parallel true', (done) -> 
 
@@ -453,7 +452,7 @@ require('nez').realize 'Async', (Async, test, context, should) ->
             fn( 4 ).then -> 
 
                 COUNT.should.equal 1
-                test done
+                done()
 
             fn 5
 
@@ -486,4 +485,6 @@ require('nez').realize 'Async', (Async, test, context, should) ->
                 COUNT.should.equal 1
                 # console.log COUNT
                 # console.log RAN
-                test done
+                done()
+
+fn()

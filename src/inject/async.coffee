@@ -10,7 +10,7 @@ module.exports = (Preparator, decoratedFn) ->
     if typeof Preparator == 'function' and typeof decoratedFn == 'undefined'
 
         decoratedFn = Preparator
-        Preparator = {}   
+        Preparator = {} 
 
     if typeof Preparator != 'object' or Preparator instanceof Array
 
