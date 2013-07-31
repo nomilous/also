@@ -1,490 +1,485 @@
 should = require 'should'
 Async  = require '../../lib/inject/async'
 
-# require('nez').realize 'Async', (Async, test, context, should) -> 
 
-fn = ->
+context 'Preparator type', ->
 
-    context 'Preparator type', ->
+    it 'cannot be Function', (done) -> 
 
-        it 'cannot be Function', (done) -> 
+        preparator = ->
 
-            preparator = ->
-
-            try 
-                object = {
-                    function: Async preparator, (args) -> 
-                }
-
-            catch error
-
-                error.should.match /requires Preparator as object/
-                done()
-
-
-        it 'cannot be Array', (done) -> 
-
-            preparator = []
-
-            try 
-                object = {
-                    function: Async preparator, (args) -> 
-                }
-
-            catch error
-                error.should.match /requires Preparator as object/
-                done()
-
-        it 'cannot be Number', (done) -> 
-
-            preparator = 1
-
-            try 
-                object = {
-                    function: Async preparator, (args) -> 
-                }
-
-            catch error
-                error.should.match /requires Preparator as object/
-                done()
-
-        it 'cannot be String', (done) -> 
-
-            preparator = 'str'
-
-            try 
-                object = {
-                    function: Async preparator, (args) -> 
-                }
-
-            catch error
-                error.should.match /requires Preparator as object/
-                done()
-
-            
-        it 'preparator is optional', (done) -> 
-
+        try 
             object = {
-                function: Async (args) -> done()
+                function: Async preparator, (args) -> 
             }
 
-            object.function()
+        catch error
 
-
-    context 'promise', -> 
-
-        it 'returns a promise', (done) -> 
-
-            should.exist (Async -> )().then
+            error.should.match /requires Preparator as object/
             done()
 
 
-        it 'defaults passing the promise resolver / rejector as arg1', (done) -> 
+    it 'cannot be Array', (done) -> 
 
-            #
-            # this is still up in the air re "interface" design
-            #
+        preparator = []
 
-            fn1 = Async {}, (done) -> done new Error('ERROR')
-            
-            fn2 = Async {}, (done) -> done 'RESULT'
-
-
-            fn1().then(
-
-                (result) ->
-                (error) -> error.should.match /ERROR/
-
-            )
-
-            fn2().then(
-
-                (result) -> result.should.equal 'RESULT'; done()
-                (error) ->
-
-            )
-
-        it 'provides result from beforeEach and afterEach through status', (done) -> 
-
-            RESULTS = []
-            fn = Async 
-
-                beforeEach: (done) -> done 'BEFORE_EACH_RESULT'
-                afterEach:  (done) -> done 'AFTER_EACH_RESULT'
-                (done) -> done 'FN_RESULT'
-
-            fn().then(
-
-                (result) -> 
-
-                    RESULTS.should.eql [
-
-                        { beforeEach: 'BEFORE_EACH_RESULT' }
-                        { result: 'FN_RESULT' }
-                        { afterEach: 'AFTER_EACH_RESULT' }
-
-                    ]
-                    done()
-
-                (error)  -> 
-                (notify) -> RESULTS.push notify
-            )
-
-
-        it 'provides access to the deferral for alternative injection', (done) -> 
-
-            fn = Async
-
-                beforeEach: (done, context) -> 
-
-                    #
-                    # set alternative to the default injection of resolver as arg1
-                    #
-
-                    defer = context.defer
-                    context.last[0] = defer.resolve
-                    done()
-
-                (arg1, arg2, resolve) -> 
-
-                    resolve 'RESULT: ' + arg1 + arg2
-
-
-            fn( 'A', 'B' ).then (result) -> 
-
-                result.should.equal 'RESULT: AB'
-                done()
-
-
-
-    context 'Preparator.beforeAll()', ->
-
-
-        it 'is called', (done) -> 
-
-            preparator = 
-
-                beforeAll: -> done()
-
+        try 
             object = {
-                function: Async preparator, (args) -> done()
+                function: Async preparator, (args) -> 
             }
 
-            object.function()
+        catch error
+            error.should.match /requires Preparator as object/
+            done()
 
+    it 'cannot be Number', (done) -> 
 
-        it 'suspends call to decoratedFn till done()', (done) -> 
+        preparator = 1
 
-            RUN = false
+        try 
+            object = {
+                function: Async preparator, (args) -> 
+            }
 
-            fn  = Async
+        catch error
+            error.should.match /requires Preparator as object/
+            done()
 
-                beforeAll: (done) -> 
+    it 'cannot be String', (done) -> 
 
-                    #
-                    # delay in beforeAll
-                    #
+        preparator = 'str'
 
-                    setTimeout done, 150
+        try 
+            object = {
+                function: Async preparator, (args) -> 
+            }
 
-                (done, arg) -> 
+        catch error
+            error.should.match /requires Preparator as object/
+            done()
 
-                    #
-                    # this was delayed
-                    #
+        
+    it 'preparator is optional', (done) -> 
 
-                    RUN = true
-                    #arg.should.equal 'ARG'
-                    done()
+        object = {
+            function: Async (args) -> done()
+        }
 
-            #
-            # call and verify the delay
-            #
+        object.function()
 
-            fn('ARG')
 
-            setTimeout(
-                -> RUN.should.equal false
-                100
-            )
+context 'promise', -> 
 
-            setTimeout(
-                -> 
-                    RUN.should.equal true
-                    done()
-                200
-            )
+    it 'returns a promise', (done) -> 
 
-        it 'is run only once, beforeAll calls to decoratedFn', (done) ->
+        should.exist (Async -> )().then
+        done()
 
-            cn = before: 0, during: 0
-            fn = Async
 
-                beforeAll: (done) -> 
-                    cn.before++
-                    done()
-                beforeEach: (done, inject) -> 
-                    inject.args[0] = inject.defer.resolve
-                    done()
-                (done) -> 
-                    cn.before.should.equal 1 # already
-                    cn.during++
-                    done()
+    it 'defaults passing the promise resolver / rejector as arg1', (done) -> 
 
-            fn()
-            fn()
-            fn()
-            fn()
-            fn().then ->
-            
-                cn.should.eql before: 1, during: 5
-                done()
-            
+        #
+        # this is still up in the air re "interface" design
+        #
 
-        it 'allows beforeAll to indicate failure into error handler', (done) -> 
+        fn1 = Async {}, (done) -> done new Error('ERROR')
+        
+        fn2 = Async {}, (done) -> done 'RESULT'
 
-            fn = Async 
 
-                beforeAll: (done) -> done( new Error 'beforeAll failed' )
-                error: (error) -> 
-                    error.should.match /beforeAll failed/
-                    done()
-                -> console.log 'SHOULD NOT RUN'
+        fn1().then(
 
-            fn()
+            (result) ->
+            (error) -> error.should.match /ERROR/
 
+        )
 
-        it 'provides context into beforeAll as arg2', (done) -> 
+        fn2().then(
 
-            fn = Async
+            (result) -> result.should.equal 'RESULT'; done()
+            (error) ->
 
-                 beforeAll: (done, context) -> 
+        )
 
-                    context.first.push 'ALWAYS ARG ONE'
-                    done()
+    it 'provides result from beforeEach and afterEach through status', (done) -> 
 
-                 (done, arg1, arg2) -> 
+        RESULTS = []
+        fn = Async 
 
-                    arg1.should.equal 'ALWAYS ARG ONE'
-                    arg2.should.equal 'another arg'
-                    done()
+            beforeEach: (done) -> done 'BEFORE_EACH_RESULT'
+            afterEach:  (done) -> done 'AFTER_EACH_RESULT'
+            (done) -> done 'FN_RESULT'
 
-            fn('another arg').then -> done()
+        fn().then(
 
-    context 'Preparator.beforeEach()', -> 
+            (result) -> 
 
-        it 'is called', (done) -> 
+                RESULTS.should.eql [
 
-            fn = Async
+                    { beforeEach: 'BEFORE_EACH_RESULT' }
+                    { result: 'FN_RESULT' }
+                    { afterEach: 'AFTER_EACH_RESULT' }
 
-                beforeEach: -> done()
-                ->
-
-            fn()
-
-
-        it 'suspends call to decoratedFn till done()', (done) -> 
-
-            RUN = false
-
-            fn  = Async
-
-                beforeEach: (done) -> 
-
-                    setTimeout done, 150
-
-                (arg) -> 
-
-                    RUN = true
-                    done()
-
-            fn('ARG')
-
-            setTimeout(
-                -> RUN.should.equal false
-                100
-            )
-
-            setTimeout(
-                -> RUN.should.equal true
-                200
-            )
-
-        it 'is run once beforeEach call to decoratedFn', (done) -> 
-
-            cn = before: 0, during: 0
-            fn = Async
-
-                beforeEach: (done) -> 
-
-                    cn.before++
-                    done()
-
-                -> 
-                    cn.during++
-
-            fn()
-            fn()
-            fn()
-            fn()
-            fn()
-
-            setTimeout(
-                -> 
-                    cn.should.eql before: 5, during: 5
-                    done()
-
-                100
-            )
-
-
-    context 'Preparator.afterEach()', ->
-
-        it 'runs after the call to decoratedFn', (done) ->
-
-            RAN_ALREADY = false
-
-            Async
-
-                afterEach: -> 
-
-                    RAN_ALREADY.should.equal true
-                    done()
-
-                (done) -> 
-
-                    RAN_ALREADY = true
-                    done()
-
-            .apply null
-
-
-        it 'runs after each call', (done) -> 
-
-            count  = 0
-
-            fn = Async
-
-                afterEach: (done) -> 
-
-                    count++
-                    done()
-
-                (done) -> 
-
-                    done()
-
-
-            fn()
-            fn()
-            fn().then -> 
-
-                count.should.equal 3
+                ]
                 done()
 
-    
-    context 'Preparator.parallel', -> 
+            (error)  -> 
+            (notify) -> RESULTS.push notify
+        )
 
-        it 'can be set to false to run calls in sequence', (done) -> 
 
-            #
-            # the tricky bit...
-            #
+    it 'provides access to the deferral for alternative injection', (done) -> 
 
-            RAN = []
+        fn = Async
 
-            fn  = Async
+            beforeEach: (done, context) -> 
 
-                parallel: false
+                #
+                # set alternative to the default injection of resolver as arg1
+                #
 
-                beforeEach: (done, context) -> 
-
-                    # console.log BEFORE: 
-                    #     queue: context.queue.length
-                    #     args: context.args
-                    done()
-
-                afterEach: (done, context) -> 
-  
-                    # console.log AFTER: 
-                    #     queue: context.queue.length
-                    #     args: context.args
-                    done()
-
-                (done, num) -> 
-
-                    RAN.push num
-                    done()
-
-            fn( 1 ).then -> RAN.should.eql [1]
-            fn( 2 ).then -> RAN.should.eql [1,2]
-            fn( 3 ).then -> RAN.should.eql [1,2,3]
-            fn( 4 ).then -> RAN.should.eql [1,2,3,4]
-            fn( 5 ).then -> 
-                #console.log RAN
+                defer = context.defer
+                context.last[0] = defer.resolve
                 done()
 
-    context 'Preparator.afterAll', -> 
+            (arg1, arg2, resolve) -> 
 
-        it 'runs after all with parallel true', (done) -> 
+                resolve 'RESULT: ' + arg1 + arg2
 
-            RAN   = []
-            COUNT = 0
 
-            fn  = Async
+        fn( 'A', 'B' ).then (result) -> 
 
-                afterEach: (done) -> done()
+            result.should.equal 'RESULT: AB'
+            done()
 
-                afterAll: (done) -> 
 
-                    RAN.should.eql [ 1, 2, 3, 4, 5 ]
-                    COUNT++
-                    done()
 
-                (done, num) -> 
+context 'Preparator.beforeAll()', ->
 
-                    RAN.push num
-                    done()
 
-            fn 1
-            fn 2
-            fn 3
-            fn( 4 ).then -> 
+    it 'is called', (done) -> 
 
-                COUNT.should.equal 1
+        preparator = 
+
+            beforeAll: -> done()
+
+        object = {
+            function: Async preparator, (args) -> done()
+        }
+
+        object.function()
+
+
+    it 'suspends call to decoratedFn till done()', (done) -> 
+
+        RUN = false
+
+        fn  = Async
+
+            beforeAll: (done) -> 
+
+                #
+                # delay in beforeAll
+                #
+
+                setTimeout done, 150
+
+            (done, arg) -> 
+
+                #
+                # this was delayed
+                #
+
+                RUN = true
+                #arg.should.equal 'ARG'
                 done()
 
-            fn 5
+        #
+        # call and verify the delay
+        #
 
-        it 'runs after all with parallel false', (done) -> 
+        fn('ARG')
 
-            RAN   = []
-            COUNT = 0
+        setTimeout(
+            -> RUN.should.equal false
+            100
+        )
 
-            fn  = Async
+        setTimeout(
+            -> 
+                RUN.should.equal true
+                done()
+            200
+        )
 
-                parallel: false
+    it 'is run only once, beforeAll calls to decoratedFn', (done) ->
 
-                afterAll: (done) -> 
+        cn = before: 0, during: 0
+        fn = Async
 
-                    RAN.should.eql [ 1, 2, 3, 4, 5 ]
-                    COUNT++
-                    done()
-
-                (done, num) -> 
-
-                    RAN.push num
-                    done()
-
-            fn 1
-            fn 2
-            fn 3
-            fn( 4 ).then -> COUNT.should.equal 0
-            fn( 5 ).then -> 
-
-                COUNT.should.equal 1
-                # console.log COUNT
-                # console.log RAN
+            beforeAll: (done) -> 
+                cn.before++
+                done()
+            beforeEach: (done, inject) -> 
+                inject.args[0] = inject.defer.resolve
+                done()
+            (done) -> 
+                cn.before.should.equal 1 # already
+                cn.during++
                 done()
 
-fn()
+        fn()
+        fn()
+        fn()
+        fn()
+        fn().then ->
+        
+            cn.should.eql before: 1, during: 5
+            done()
+        
+
+    it 'allows beforeAll to indicate failure into error handler', (done) -> 
+
+        fn = Async 
+
+            beforeAll: (done) -> done( new Error 'beforeAll failed' )
+            error: (error) -> 
+                error.should.match /beforeAll failed/
+                done()
+            -> console.log 'SHOULD NOT RUN'
+
+        fn()
+
+
+    it 'provides context into beforeAll as arg2', (done) -> 
+
+        fn = Async
+
+             beforeAll: (done, context) -> 
+
+                context.first.push 'ALWAYS ARG ONE'
+                done()
+
+             (done, arg1, arg2) -> 
+
+                arg1.should.equal 'ALWAYS ARG ONE'
+                arg2.should.equal 'another arg'
+                done()
+
+        fn('another arg').then -> done()
+
+context 'Preparator.beforeEach()', -> 
+
+    it 'is called', (done) -> 
+
+        fn = Async
+
+            beforeEach: -> done()
+            ->
+
+        fn()
+
+
+    it 'suspends call to decoratedFn till done()', (done) -> 
+
+        RUN = false
+
+        fn  = Async
+
+            beforeEach: (done) -> 
+
+                setTimeout done, 150
+
+            (arg) -> 
+
+                RUN = true
+                done()
+
+        fn('ARG')
+
+        setTimeout(
+            -> RUN.should.equal false
+            100
+        )
+
+        setTimeout(
+            -> RUN.should.equal true
+            200
+        )
+
+    it 'is run once beforeEach call to decoratedFn', (done) -> 
+
+        cn = before: 0, during: 0
+        fn = Async
+
+            beforeEach: (done) -> 
+
+                cn.before++
+                done()
+
+            -> 
+                cn.during++
+
+        fn()
+        fn()
+        fn()
+        fn()
+        fn()
+
+        setTimeout(
+            -> 
+                cn.should.eql before: 5, during: 5
+                done()
+
+            100
+        )
+
+
+context 'Preparator.afterEach()', ->
+
+    it 'runs after the call to decoratedFn', (done) ->
+
+        RAN_ALREADY = false
+
+        Async
+
+            afterEach: -> 
+
+                RAN_ALREADY.should.equal true
+                done()
+
+            (done) -> 
+
+                RAN_ALREADY = true
+                done()
+
+        .apply null
+
+
+    it 'runs after each call', (done) -> 
+
+        count  = 0
+
+        fn = Async
+
+            afterEach: (done) -> 
+
+                count++
+                done()
+
+            (done) -> 
+
+                done()
+
+
+        fn()
+        fn()
+        fn().then -> 
+
+            count.should.equal 3
+            done()
+
+
+context 'Preparator.parallel', -> 
+
+    it 'can be set to false to run calls in sequence', (done) -> 
+
+        #
+        # the tricky bit...
+        #
+
+        RAN = []
+
+        fn  = Async
+
+            parallel: false
+
+            beforeEach: (done, context) -> 
+
+                # console.log BEFORE: 
+                #     queue: context.queue.length
+                #     args: context.args
+                done()
+
+            afterEach: (done, context) -> 
+
+                # console.log AFTER: 
+                #     queue: context.queue.length
+                #     args: context.args
+                done()
+
+            (done, num) -> 
+
+                RAN.push num
+                done()
+
+        fn( 1 ).then -> RAN.should.eql [1]
+        fn( 2 ).then -> RAN.should.eql [1,2]
+        fn( 3 ).then -> RAN.should.eql [1,2,3]
+        fn( 4 ).then -> RAN.should.eql [1,2,3,4]
+        fn( 5 ).then -> 
+            #console.log RAN
+            done()
+
+context 'Preparator.afterAll', -> 
+
+    it 'runs after all with parallel true', (done) -> 
+
+        RAN   = []
+        COUNT = 0
+
+        fn  = Async
+
+            afterEach: (done) -> done()
+
+            afterAll: (done) -> 
+
+                RAN.should.eql [ 1, 2, 3, 4, 5 ]
+                COUNT++
+                done()
+
+            (done, num) -> 
+
+                RAN.push num
+                done()
+
+        fn 1
+        fn 2
+        fn 3
+        fn( 4 ).then -> 
+
+            COUNT.should.equal 1
+            done()
+
+        fn 5
+
+    it 'runs after all with parallel false', (done) -> 
+
+        RAN   = []
+        COUNT = 0
+
+        fn  = Async
+
+            parallel: false
+
+            afterAll: (done) -> 
+
+                RAN.should.eql [ 1, 2, 3, 4, 5 ]
+                COUNT++
+                done()
+
+            (done, num) -> 
+
+                RAN.push num
+                done()
+
+        fn 1
+        fn 2
+        fn 3
+        fn( 4 ).then -> COUNT.should.equal 0
+        fn( 5 ).then -> 
+
+            COUNT.should.equal 1
+            # console.log COUNT
+            # console.log RAN
+            done()
