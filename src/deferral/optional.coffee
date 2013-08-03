@@ -1,21 +1,25 @@
 {defer}  = require 'when'
 {argsOf} = require '../util'
 
-module.exports = (opts, fn) -> 
+module.exports = (opts, decoratedFn) -> 
 
     #
     # opts
     # ----
     # 
     # * resolver - specify argument signature name to inject resolver into
-    # * fn       - function to inject resolver into
     # 
+    # decoratedFn
+    # -----------
+    # 
+    # A function to surround in an optional deferral and inject 
+    # resolvability into
     #
     
-    opts ||= {}
-    fn   ||= opts
+    opts        ||= {}
+    decoratedFn ||= opts
 
-    throw new Error 'expected function as last arg' unless typeof fn == 'function' 
+    throw new Error 'expected function as last arg' unless typeof decoratedFn == 'function' 
 
     -> 
 
@@ -23,28 +27,34 @@ module.exports = (opts, fn) ->
 
         if opts.resolver?
 
-            resolverPosition = argsOf(fn).indexOf opts.resolver
+            argPosition = argsOf( decoratedFn ).indexOf opts.resolver
 
-            if resolverPosition >= 0
+            if argPosition >= 0
+
+                #
+                # for continuity, the full promise interface 
+                # is available on the resolver
+                #
+
+                resolver = deferral.resolve
+                resolver.resolve    = resolver
+                resolver.reject     = deferral.reject
+                resolver.notify     = deferral.notify
 
                 newArgs  = []
                 newArgs.push arg for arg in arguments
-
-                deferral.resolve.notify     = deferral.notify
-                deferral.resolve.reject     = deferral.reject
-                newArgs[ resolverPosition ] = deferral.resolve
-
-                fn.apply this, newArgs
+                newArgs[ argPosition ] = resolver
+                decoratedFn.apply this, newArgs
 
             else
 
-                fn.apply this, arguments
+                decoratedFn.apply this, arguments
                 deferral.resolve()
                 
             return deferral.promise
 
 
-        fn.apply this, arguments
+        decoratedFn.apply this, arguments
         deferral.resolve()
         deferral.promise
         

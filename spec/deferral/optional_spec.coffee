@@ -76,7 +76,7 @@ describe 'OptionalDeferral', ->
                 done()
 
         
-        it 'appends reject and notify as properties onto resolver', (done) ->
+        it 'appends resolve, reject and notify as properties onto resolver', (done) ->
 
             UPDATES = []
 
@@ -85,7 +85,20 @@ describe 'OptionalDeferral', ->
                 resolver: 'matchArg'
                 (arg, matchArg) -> 
 
-                    arg.should.equal 'ARG'
+                    #
+                    # for continuity
+                    #
+
+                    should.exist matchArg.resolve
+                    should.exist matchArg.reject
+                    should.exist matchArg.notify
+
+                    #
+                    # for use as resolver: (done) -> done()
+                    #
+
+                    matchArg.should.equal matchArg.resolve
+
                     
                     setTimeout (->
 
@@ -103,7 +116,7 @@ describe 'OptionalDeferral', ->
 
                     ), 30
 
-            run('ARG').then( 
+            run().then( 
 
                 (result) -> 
                 (error)  -> 
