@@ -16,3 +16,10 @@ describe 'OptionalDeferral', ->
 
             error.should.match /expected function as last arg/
             done()
+
+    it 'calling the returned function calls the function at last arg', (done) -> 
+
+        run = OptionalDeferral done
+        run()
+
+

@@ -6,4 +6,4 @@ module.exports = (args...) ->
 
         throw new Error 'expected function as last arg'
 
-    ->
+    -> fn()
