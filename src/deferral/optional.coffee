@@ -1,23 +1,38 @@
-{defer} = require 'when'
+{defer}  = require 'when'
+{argsOf} = require '../util'
 
-module.exports = (args...) -> 
+module.exports = (opts, fn) -> 
+
+    #
+    # opts
+    # ----
+    # 
+    # * resolver - specify argument signature name to inject resolver into
+    # * fn       - function to inject resolver into
+    # 
+    #
     
-    opts = args[0]
-    fn   = args[-1..][0]
+    opts ||= {}
+    fn   ||= opts
 
     throw new Error 'expected function as last arg' unless typeof fn == 'function' 
 
     -> 
 
-        defers = opts.if() if typeof opts.if == 'function'
-        
-        if defers 
+        deferral = defer()
 
-            deferral = defer()
-            newArgs = [deferral.resolve]
-            newArgs.push arg for arg in arguments
-            fn.apply this, newArgs
-            return deferral.promise
+        if opts.resolver? and resolverPosition = argsOf(fn).indexOf opts.resolver
 
-        fn.apply this, arguments
+                newArgs  = []
+                newArgs.push arg for arg in arguments
+
+                deferral.resolve.notify     = deferral.notify
+                deferral.resolve.reject     = deferral.reject
+                newArgs[ resolverPosition ] = deferral.resolve
+
+                fn.apply this, newArgs
+                return deferral.promise
+
+
+        deferral.resolve fn.apply this, arguments
         
