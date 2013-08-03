@@ -25,7 +25,6 @@ module.exports = (opts, decoratedFn) ->
     -> 
 
         deferral = defer()
-        # opts.context ||= this # (replaces null with this, null is valid option)
         opts.context = if typeof opts.context == 'undefined' then this else opts.context
 
 

@@ -130,24 +130,18 @@ describe 'OptionalDeferral', ->
             )
 
 
-        it 'default the function call on `this` context', (done) -> 
+        it 'defaults the function call on `this` context', (done) -> 
 
-            obj = new Object
+            class TestThatItWoksOnClasses
+                constructor: (@property) ->
+                promise: OptionalDeferral resolver: 'defer', (arg, defer) -> 
 
-                property: 'VALUE'
-                promise: OptionalDeferral 
-
-                    resolver: 'defer'
-                    (arg, defer) -> 
-
-                        #
-                        # @property still refers to 'VALUE'
-                        #
-
-                        defer.resolve @property + ' ' + arg
+                    defer.resolve @property + ' ' + arg
 
 
-            obj.promise('ARG').then (result) -> 
+            test = new TestThatItWoksOnClasses 'VALUE'
+            promise = test.promise 'ARG'
+            promise.then (result) ->
 
                 result.should.equal 'VALUE ARG'
                 done()
@@ -182,7 +176,7 @@ describe 'OptionalDeferral', ->
                 property: 'A'
 
             obj2 = new Object 
-                property: 'B', 
+                property: 'B'
                 promise: OptionalDeferral 
 
                     resolver: 'defer'
