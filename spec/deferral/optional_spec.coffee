@@ -130,9 +130,86 @@ describe 'OptionalDeferral', ->
             )
 
 
+        it 'default the function call on `this` context', (done) -> 
+
+            obj = new Object
+
+                property: 'VALUE'
+                promise: OptionalDeferral 
+
+                    resolver: 'defer'
+                    (arg, defer) -> 
+
+                        #
+                        # @property still refers to 'VALUE'
+                        #
+
+                        defer.resolve @property + ' ' + arg
 
 
+            obj.promise('ARG').then (result) -> 
 
+                result.should.equal 'VALUE ARG'
+                done()
+
+
+        it 'can specify null as alternative object context', (done) -> 
+
+            obj = new Object
+
+                property: 'VALUE'
+                promise: OptionalDeferral 
+
+                    resolver: 'defer'
+                    context: null
+
+                    (arg, defer) -> 
+
+                        #
+                        # context was set to null / global
+                        #
+
+                        defer.resolve @process.title
+
+            obj.promise().then (result) -> 
+
+                result.should.equal 'node'
+                done()
+
+        it 'can specify another object as context', (done) -> 
+
+            obj1 = new Object 
+                property: 'A'
+
+            obj2 = new Object 
+                property: 'B', 
+                promise: OptionalDeferral 
+
+                    resolver: 'defer'
+                    context: obj1
+
+                    (defer) -> 
+
+                        #
+                        # @property refers to value at instance: obj1
+                        #
+
+                        defer.resolve @property
+
+
+            obj2.promise().then (result) -> 
+
+                result.should.equal 'A'
+                done()
+
+
+        context 'can specify a timeout', -> 
+
+            it 'timeout, by default, rejects the promise'
+
+            it 'timeout can resolve the promise instead'
+
+            it 'timeout notifies on the promise'
 
 
 

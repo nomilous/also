@@ -8,6 +8,7 @@ module.exports = (opts, decoratedFn) ->
     # ----
     # 
     # * resolver - specify argument signature name to inject resolver into
+    # * context  - the object context to call the decoratedFn on
     # 
     # decoratedFn
     # -----------
@@ -16,14 +17,17 @@ module.exports = (opts, decoratedFn) ->
     # resolvability into
     #
     
-    opts        ||= {}
-    decoratedFn ||= opts
+    opts         ||= {}
+    decoratedFn  ||= opts
 
     throw new Error 'expected function as last arg' unless typeof decoratedFn == 'function' 
 
     -> 
 
         deferral = defer()
+        # opts.context ||= this # (replaces null with this, null is valid option)
+        opts.context = if typeof opts.context == 'undefined' then this else opts.context
+
 
         if opts.resolver?
 
@@ -44,17 +48,17 @@ module.exports = (opts, decoratedFn) ->
                 newArgs  = []
                 newArgs.push arg for arg in arguments
                 newArgs[ argPosition ] = resolver
-                decoratedFn.apply this, newArgs
+                decoratedFn.apply opts.context, newArgs
 
             else
 
-                decoratedFn.apply this, arguments
+                decoratedFn.apply opts.context, arguments
                 deferral.resolve()
                 
             return deferral.promise
 
 
-        decoratedFn.apply this, arguments
+        decoratedFn.apply opts.context, arguments
         deferral.resolve()
         deferral.promise
         
