@@ -1,3 +1,5 @@
+{defer} = require 'when'
+
 module.exports = (args...) -> 
     
     opts = args[0]
@@ -8,5 +10,12 @@ module.exports = (args...) ->
     -> 
 
         defers = opts.if() if typeof opts.if == 'function'
+        
+        if defers 
+
+            deferral = defer()
+            fn deferral.resolve
+            return deferral.promise
+
         fn()
-        opts.then() if typeof opts.then == 'function' 
+        

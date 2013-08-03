@@ -33,15 +33,17 @@ describe 'OptionalDeferral', ->
 
         run()
 
-    it 'runs opts.then after calling the function', (done) -> 
+    it '(if opts.if() is true) creates a deferral, passes the resolver into arg1 and returns the promise', (done) -> 
 
         run = OptionalDeferral 
 
             if: -> true
-            then: -> done()
-            -> 
+            (resolve) -> resolve 'RESULT'
 
-        run()
+        run().then (result) -> 
+
+            result.should.equal 'RESULT'
+            done()
 
 
     
