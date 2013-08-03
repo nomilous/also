@@ -21,7 +21,11 @@ module.exports = (opts, fn) ->
 
         deferral = defer()
 
-        if opts.resolver? and resolverPosition = argsOf(fn).indexOf opts.resolver
+        if opts.resolver?
+
+            resolverPosition = argsOf(fn).indexOf opts.resolver
+
+            if resolverPosition >= 0
 
                 newArgs  = []
                 newArgs.push arg for arg in arguments
@@ -31,8 +35,16 @@ module.exports = (opts, fn) ->
                 newArgs[ resolverPosition ] = deferral.resolve
 
                 fn.apply this, newArgs
-                return deferral.promise
+
+            else
+
+                fn.apply this, arguments
+                deferral.resolve()
+                
+            return deferral.promise
 
 
-        deferral.resolve fn.apply this, arguments
+        fn.apply this, arguments
+        deferral.resolve()
+        deferral.promise
         

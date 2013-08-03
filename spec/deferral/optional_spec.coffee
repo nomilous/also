@@ -29,13 +29,6 @@ describe 'OptionalDeferral', ->
         run().then.should.be.an.instanceof Function
         done()
 
-    it 'resolves the promise with returned result of the function', (done) -> 
-
-        run = OptionalDeferral -> 'RETURNED VALUE'
-        run().then (result) -> 
-            result.should.equal 'RETURNED VALUE'
-            done()
-
 
     it 'passes existing args into fn', (done) -> 
 
@@ -45,12 +38,9 @@ describe 'OptionalDeferral', ->
             (args...) -> 
 
                 args.should.eql [1,2,3]
-                args.map (n) -> ++n
+                done()
 
-        run( 1, 2, 3 ).then (result) -> 
-
-            result.should.eql [ 2, 3, 4 ] 
-            done()
+        run 1, 2, 3
 
 
     context 'opts.resolver', -> 
@@ -68,6 +58,21 @@ describe 'OptionalDeferral', ->
             run('ARG').then (result) -> 
 
                 result.should.equal 'RESULT'
+                done()
+
+        it 'auto resolves AFTER running the fn if no arg matched as resolver', (done) -> 
+
+            RUN = false
+            run = OptionalDeferral 
+
+                resolver: 'done'
+                (arg1, resolver) -> 
+
+                    RUN = true
+
+            run( 'ARG1' ).then -> 
+
+                RUN.should.equal true
                 done()
 
         
