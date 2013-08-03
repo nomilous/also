@@ -1,9 +1,11 @@
 module.exports = (args...) -> 
+    
+    opts = args[0]
+    fn   = args[-1..][0]
+    
+    throw new Error 'expected function as last arg' unless typeof fn == 'function' 
 
-    fn = args[-1..][0]
+    -> 
 
-    unless typeof fn == 'function' 
-
-        throw new Error 'expected function as last arg'
-
-    -> fn()
+        defers = if typeof opts.if == 'function' then opts.if()
+        fn()

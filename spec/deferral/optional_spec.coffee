@@ -23,3 +23,13 @@ describe 'OptionalDeferral', ->
         run()
 
 
+    it 'calling the returned function calls arg1.if if provided', (done) -> 
+
+        run = OptionalDeferral 
+
+            if: -> done()
+            -> 
+
+        run()
+
+    
