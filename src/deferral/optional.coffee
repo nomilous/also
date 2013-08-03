@@ -14,8 +14,10 @@ module.exports = (args...) ->
         if defers 
 
             deferral = defer()
-            fn deferral.resolve
+            newArgs = [deferral.resolve]
+            newArgs.push arg for arg in arguments
+            fn.apply this, newArgs
             return deferral.promise
 
-        fn()
+        fn.apply this, arguments
         

@@ -33,6 +33,19 @@ describe 'OptionalDeferral', ->
 
         run()
 
+    it 'passes existing args into fn', (done) -> 
+
+        run = OptionalDeferral 
+
+            if: -> 
+            (args...) -> 
+
+                args.should.eql [1,2,3]
+                done()
+
+        run 1, 2, 3
+
+
     it '(if opts.if() is true) creates a deferral, passes the resolver into arg1 and returns the promise', (done) -> 
 
         run = OptionalDeferral 
@@ -44,6 +57,20 @@ describe 'OptionalDeferral', ->
 
             result.should.equal 'RESULT'
             done()
+
+    it 'appends args after resolver if deferred', (done) -> 
+
+        run = OptionalDeferral 
+
+            if: -> true
+            (resolver, args...) -> resolver args.map (n) -> ++n
+                
+        run( 1, 2, 3 ).then (result) -> 
+
+            result.should.eql [ 2, 3, 4 ]
+            done()
+
+
 
 
     
