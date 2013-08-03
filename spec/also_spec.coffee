@@ -1,8 +1,6 @@
 require('nez').realize 'Also', (also, test, context) -> 
 
-    context 'inject.async', (it) -> 
-
-        {async} = also.inject
+    context 'inject.sync', (it) -> 
 
         it 'ducks', (done) -> 
 

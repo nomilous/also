@@ -20,21 +20,21 @@ Examples
 
 {sync, async} = require( 'also' ).inject
 
-ducks     = 0
 ducklings = 0
-quark     = sync 
+ducks   = 0
+quark = sync 
 
-    beforeEach: -> ducklings++
     beforeAll:  -> ducks++
+    beforeEach: -> ducklings++
 
     -> 
 
-        ducklings: ducklings
         ducks: ducks
+        ducklings: ducklings
         
 
 
-quark quark quark quark quark quark quark()
+console.log quark quark quark quark quark quark quark()
 
 # => { ducks: 1, ducklings: 7 }
 
@@ -47,10 +47,8 @@ quark quark quark quark quark quark quark()
 
 ```coffee
 
-nodeModules = (names) -> 
-    for name in names 
-        require name
-
+nodeModules = (names) -> require name for name in names 
+        
 start = sync nodeModules, (crypto, zlib, net) -> 
 
     #
@@ -60,6 +58,10 @@ start = sync nodeModules, (crypto, zlib, net) ->
 start()
 
 ```
+
+### asynchronous example 
+
+none. see [spec](https://github.com/nomilous/also/blob/master/spec/inject/async_spec.coffee)
 
 todo
 ----
