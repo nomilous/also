@@ -32,10 +32,7 @@ describe 'OptionalDeferral', ->
 
     it 'passes existing args into fn', (done) -> 
 
-        run = OptionalDeferral 
-
-            if: -> 
-            (args...) -> 
+        run = OptionalDeferral (args...) -> 
 
                 args.should.eql [1,2,3]
                 done()

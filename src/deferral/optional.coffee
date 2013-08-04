@@ -36,7 +36,36 @@ module.exports = (Preparator, decoratedFn) ->
 
                 unless Preparator.timeout == 0 
 
-                    timeout = setTimeout (->
+                    timeout = setTimeout (-> 
+
+                        #
+                        #
+                        #
+                        #
+                        #
+                        #    How to terminate the possibly still inprogress 'flow of execution'
+                        #    that is taking more time than this assigned timeout has allowed ?
+                        #    ------------------------------------------------------------------
+                        # 
+                        #
+                        #    Because often, when something timed out, it seems logical to try 
+                        #    again. Doing so leads to there now being two in progress, the first 
+                        #    of which has only "apparently" timed out.
+                        #             
+                        #    The problem 'of the first calling back after the timeout', is solved
+                        #    by a compliant promises implementation... 
+                        # 
+                        #    But only for as long as the promise remains THE ONLY interface 
+                        #    between the 'asynchronized' process and the calling system. 
+                        # 
+                        #    With javascript, one can be easily tempted to use the closure's
+                        #    accessable superscope from within the 'asynchronized' process to 
+                        #    modify state in the caller before ever the promise is resolved.
+                        # 
+                        # 
+                        #
+                        #
+                        #
 
                         deferral.notify event: 'timeout'
                         return deferral.resolve() if Preparator.resolveOnTimeout
