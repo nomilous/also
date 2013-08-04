@@ -15,9 +15,13 @@ Also = (args...) ->
     # and provided a context root.
     # 
 
-    [ futureArgs... , moduleFactoryFn ] = args
+    [ exporter, futureArgs... , moduleFactoryFn ] = args
 
-    moduleFactoryFn context: {}
+    for objectName of (definitions = moduleFactoryFn context: {})
+
+        exporter[objectName] = definitions[objectName]
+
+    
 
 #
 # Exported utility decorators
