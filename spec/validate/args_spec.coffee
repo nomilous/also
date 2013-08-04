@@ -7,3 +7,5 @@ describe 'Validate.args', ->
 
         Validate.args().should.be.an.instanceof Function
         done()
+
+    
