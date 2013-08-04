@@ -34,11 +34,6 @@ module.exports = (Preparator, decoratedFn) ->
 
             if argPosition >= 0
 
-                #
-                # for continuity, the full promise interface 
-                # is available on the resolver
-                #
-
                 unless Preparator.timeout == 0 
 
                     timeout = setTimeout (->
@@ -58,6 +53,11 @@ module.exports = (Preparator, decoratedFn) ->
 
                     clearTimeout timeout if timeout?
                     deferral.reject error
+
+                #
+                # for continuity, the full promise interface 
+                # is available on the resolver
+                #
 
                 resolver.resolve    = resolver
                 resolver.reject     = reject
