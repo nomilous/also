@@ -1,15 +1,18 @@
-require('nez').realize 'Wait', (Wait, test, it) -> 
+should = require 'should'
+Wait   = require '../../lib/schedule/wait'
+
+describe 'Wait', -> 
 
     it 'runs a function', (done) -> 
 
-        Wait( -> test done)()
+        Wait( -> done() )()
 
 
     it 'accepts a test to determine if it should run the function', (done) -> 
 
         fn = Wait 
             until: -> true
-            -> test done
+            -> done()
         
         fn()
 
@@ -30,7 +33,7 @@ require('nez').realize 'Wait', (Wait, test, it) ->
         setTimeout (->
 
             DONE.should.equal true
-            test done
+            done()
 
         ), 20
 
@@ -42,7 +45,7 @@ require('nez').realize 'Wait', (Wait, test, it) ->
         fn    = Wait 
 
             until: -> READY
-            retry: 1000
+            retry: 100
             -> DONE = true
 
         fn()
@@ -52,9 +55,9 @@ require('nez').realize 'Wait', (Wait, test, it) ->
         setTimeout (->
 
             DONE.should.equal true
-            test done
+            done()
 
-        ), 1001
+        ), 200
 
 
 

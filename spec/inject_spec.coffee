@@ -1,17 +1,17 @@
-require('nez').realize 'Inject', (Inject, test, context) -> 
+should = require 'should'
+util   = require '../lib/util'
+{sync, async} = require '../lib/inject'
 
+describe 'Inject', -> 
 
-    {sync, async} = Inject
-
-
-    context 'exports', (done) -> 
+    it 'exports', (done) -> 
 
         sync.should.be.an.instanceof Function
         async.should.be.an.instanceof Function
-        test done
+        done()
 
 
-    context 'injection decorator', (it) -> 
+    context 'injection decorator', -> 
 
         it 'wraps a function into another which injects arguments into it', (done) -> 
 
@@ -21,17 +21,17 @@ require('nez').realize 'Inject', (Inject, test, context) ->
                 two.should.equal   2
                 three.should.equal 3
                 four.should.equal  'FOUR'
-                test done
+                done()
 
             decoratedFunction( 'FOUR' )
 
 
-    context 'Preparator', (it) -> 
+    context 'Preparator', -> 
 
         it 'is the first arg passed to the decorator', (done) -> 
 
             preparator        = {}
-            decoratedFunction = sync preparator, -> test done
+            decoratedFunction = sync preparator, -> done()
             decoratedFunction()
 
 
@@ -58,7 +58,7 @@ require('nez').realize 'Inject', (Inject, test, context) ->
                     '3': 'fourth'
 
                 }
-                test done
+                done()
 
             decoratedFunction 'fourth'
 

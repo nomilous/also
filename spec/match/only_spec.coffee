@@ -1,6 +1,9 @@
-require('nez').realize 'Only', (Only, test, context, should) -> 
+should = require 'should'
+Only   = require '../../lib/match/only'
 
-    context 'if matchAll', (it) -> 
+describe 'Wait', ->
+
+    context 'if matchAll', -> 
 
         it 'does not run the function if arg1 does not matchAll', (done) -> 
 
@@ -11,7 +14,7 @@ require('nez').realize 'Only', (Only, test, context, should) ->
             Only.if( match, (obj) -> RAN = true )( object )
 
             RAN.should.equal false
-            test done
+            done()
 
 
         it 'runs the function if arg1 does matchAll', (done) -> 
@@ -23,7 +26,7 @@ require('nez').realize 'Only', (Only, test, context, should) ->
             fn( object )
 
             RAN.should.equal true
-            test done
+            done()
 
 
         it 'allows matching from an array', (done) -> 
@@ -44,7 +47,7 @@ require('nez').realize 'Only', (Only, test, context, should) ->
             lunch.eat sound: 'moo'
             ATE.should.equal true
 
-            test done
+            done()
 
 
 

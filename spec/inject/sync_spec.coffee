@@ -1,23 +1,27 @@
-require('nez').realize 'Sync', (Sync, test, context) -> 
+should = require 'should'
+Sync  = require '../../lib/inject/sync'
+
+
+describe 'Sync', -> 
 
     
-    context 'Preparator as a Number', (it) -> 
+    context 'Preparator as a Number', -> 
         it 'is passed directly through as arg1', (done) -> 
             fn = Sync 1, (one) -> 
                 one.should.equal 1
-                test done
+                done()
             fn()
 
 
-    context 'Preparator as a String', (it) -> 
+    context 'Preparator as a String', -> 
         it 'is passed directly through as arg1', (done) -> 
             fn = Sync 'string', (s) -> 
                 s.should.equal 'string'
-                test done
+                done()
             fn()
 
 
-    context 'Preparator as Array', (it) ->   
+    context 'Preparator as Array', ->   
         it 'is passed direcly as arg1..N', (done) -> 
             fn = Sync [1,2,'three'], (one, two, three) ->           
                 arguments.should.eql {
@@ -26,11 +30,11 @@ require('nez').realize 'Sync', (Sync, test, context) ->
                     '2': 'three'
                     '3': 'FOUR'
                 }
-                test done     
+                done()  
             fn('FOUR') 
 
 
-    context 'Preparator as Function', (it) -> 
+    context 'Preparator as Function', -> 
 
         it 'allows mapping arguments', (done) -> 
 
@@ -53,7 +57,7 @@ require('nez').realize 'Sync', (Sync, test, context) ->
                         '1': 'arg2'
                         '2': 'arg3'
 
-                    test done
+                    done()
 
             )
             decoratedFn()
@@ -75,7 +79,7 @@ require('nez').realize 'Sync', (Sync, test, context) ->
                     one.should.equal    'one'
                     two.should.equal    'two'
                     (rea + son).should.equal 'Puncture'
-                    test done
+                    done()
             }
             Token.flywheel 'Pun', 'cture'
 
@@ -94,15 +98,15 @@ require('nez').realize 'Sync', (Sync, test, context) ->
                     sum.should.not.equal '085908f6599e7bd7b4e358a1f06aa61f3569e450'
                     zlib.should.equal require 'zlib'
                     net.should.equal require 'net'
-                    test ok
+                    ok()
             }
             Jungle.frog()
 
 
-    context 'Preparator as object', (it) -> 
+    context 'Preparator as object', -> 
 
 
-        it 'appropriately calls beforeAll and beforeEach', (passed) -> 
+        it 'appropriately calls beforeAll and beforeEach', (done) -> 
 
             ducks     = 0
             ducklings = 0
@@ -119,11 +123,12 @@ require('nez').realize 'Sync', (Sync, test, context) ->
                 #
                 ->
                     ducks.should.equal 1  
-                    if ducklings > 7 then test passed # 8th()
+                    if ducklings > 7 then done() # 8th()
 
             )
 
             quark quark quark quark quark quark quark quark()
+
 
 
 
@@ -135,7 +140,7 @@ require('nez').realize 'Sync', (Sync, test, context) ->
                 beforeEach: (context) -> context.signature.should.eql ['arg1', 'arg2', 'arg3']
                 afterEach:  (context) -> context.first.should.eql []
 
-            Sync( preparator, (arg1, arg2, arg3) -> ) test done
+            Sync( preparator, (arg1, arg2, arg3) -> ) done()
 
 
 
@@ -145,7 +150,7 @@ require('nez').realize 'Sync', (Sync, test, context) ->
 
                 beforeAll:  (context) -> context.first.push  'ARG1'
                 beforeEach: (context) -> context.inject.push 'ARG2'
-                afterEach:  (context) -> test done 
+                afterEach:  (context) -> done()
 
                 -> 
 
@@ -172,6 +177,6 @@ require('nez').realize 'Sync', (Sync, test, context) ->
         
 
 
-            .apply null, [ -> test done ]
+            .apply null, [ -> done() ]
 
 

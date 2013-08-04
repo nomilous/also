@@ -1,12 +1,15 @@
-require('nez').realize 'Util', (util, test, context) -> 
+should = require 'should'
+util   = require '../lib/util'
 
-    context 'argsOf', (it) ->
+describe 'Util', -> 
+
+    context 'argsOf', ->
 
         it 'returns the args of a basic function', (done) -> 
 
             util.argsOf( () -> ).should.eql []
             util.argsOf( (test, ing) -> ).should.eql ['test', 'ing']
-            test done
+            done()
 
 
         it 'ignores nested function', (done) -> 
@@ -16,7 +19,7 @@ require('nez').realize 'Util', (util, test, context) ->
                 -> (ignore, these) -> 
 
             ).should.eql []
-            test done
+            done()
 
 
         it 'ignores non function brackets', (done) ->
@@ -26,4 +29,4 @@ require('nez').realize 'Util', (util, test, context) ->
                 (1;'two')
 
             ).should.eql []
-            test done
+            done()

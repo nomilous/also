@@ -1,6 +1,8 @@
-require('nez').realize 'Also', (also, test, context) -> 
+should = require 'should'
 
-    context 'inject.sync', (it) -> 
+describe 'Also', -> 
+
+    context 'inject.sync', -> 
 
         it 'ducks', (done) -> 
 
@@ -23,4 +25,4 @@ require('nez').realize 'Also', (also, test, context) ->
                 ducks: 1
                 ducklings: 7
 
-            test done
+            done()
