@@ -201,13 +201,57 @@ describe 'OptionalDeferral', ->
 
     context 'Preparator.timeout', -> 
 
+        it 'rejects the promise by default', (done) -> 
 
-        it 'rejects the promise by default'
+            run = OptionalDeferral 
 
-        it 'can resolve the promise instead'
+                resolver: 'defer'
+                timeout: 10
+                (defer) -> 
 
-        it 'notifies on the promise'
+                    # defer.notify 'update'
 
+            run().then null, 
+
+                (error) -> 
+
+                    error.should.match /timeout/
+                    done()
+
+                # (update) -> console.log update: update
+            
+
+
+        it 'can resolve the promise instead', (done) -> 
+
+            run = OptionalDeferral 
+
+                resolver: 'defer'
+                timeout: 10
+                resolveOnTimeout: true
+                (defer) -> 
+
+
+            run().then (result) -> 
+
+                should.not.exist result
+                done()
+
+
+        it 'notifies on the promise', (done) -> 
+
+            run = OptionalDeferral 
+
+                resolver: 'defer'
+                timeout: 10
+                resolveOnTimeout: true
+                (defer) -> 
+
+
+            run().then null, null, (update) ->
+
+                update.should.eql event: 'timeout'
+                done()
 
 
 

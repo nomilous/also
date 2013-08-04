@@ -9,6 +9,7 @@ module.exports = (Preparator, decoratedFn) ->
     # 
     # * resolver - specify argument signature name to inject resolver into
     # * context  - the object context to call the decoratedFn on
+    # * timeout  - if set, the deferral is rejected if not resolved in time
     # 
     # decoratedFn
     # -----------
@@ -17,8 +18,9 @@ module.exports = (Preparator, decoratedFn) ->
     # resolvability into
     #
     
-    Preparator   ||= {}
-    decoratedFn  ||= Preparator
+    Preparator         ||= {}
+    Preparator.timeout ||= 0
+    decoratedFn        ||= Preparator
 
     throw new Error 'expected function as last arg' unless typeof decoratedFn == 'function'
     if Preparator.resolver? then argPosition = argsOf( decoratedFn ).indexOf Preparator.resolver
@@ -37,9 +39,28 @@ module.exports = (Preparator, decoratedFn) ->
                 # is available on the resolver
                 #
 
-                resolver = deferral.resolve
+                unless Preparator.timeout == 0 
+
+                    timeout = setTimeout (->
+
+                        deferral.notify event: 'timeout'
+                        return deferral.resolve() if Preparator.resolveOnTimeout
+                        deferral.reject new Error 'timeout'
+
+                    ), Preparator.timeout
+
+                resolver = (result) -> 
+
+                    clearTimeout timeout if timeout?
+                    deferral.resolve result
+
+                reject = (error) -> 
+
+                    clearTimeout timeout if timeout?
+                    deferral.reject error
+
                 resolver.resolve    = resolver
-                resolver.reject     = deferral.reject
+                resolver.reject     = reject
                 resolver.notify     = deferral.notify
 
                 newArgs  = []
