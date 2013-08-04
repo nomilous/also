@@ -1,12 +1,38 @@
-# 
-# !!Experimental!!
-# ================
 #
+# Exported utility decorators
+# ===========================
+# 
+
+
+localExports = {
+
+    validate: {}
+    inject:   {}
+    deferral: {}
+    schedule: {}
+    match:    {}
+    util:     {}
+
+}
+
+nodeExport = (ontoObject) -> 
+
+    Object.defineProperty( 
+
+        ontoObject, 
+        submoduleName, 
+        enumerable: true, 
+        value: require "./#{ submoduleName }" 
+
+    ) for submoduleName of localExports
+
+    return ontoObject
+
 
 Also = (args...) -> 
     
     #
-    # Also( ..., moduleFactoryFn )
+    # Also( exporter, ..., moduleFactoryFn )
     # ----------------------------
     # 
     # ### moduleFactoryFn
@@ -17,70 +43,14 @@ Also = (args...) ->
 
     [ exporter, futureArgs... , moduleFactoryFn ] = args
 
-    for objectName of (definitions = moduleFactoryFn context: {})
+    root = context: {}
+
+    if process? and process.title == 'node' then nodeExport root
+
+    for objectName of (definitions = moduleFactoryFn root)
 
         exporter[objectName] = definitions[objectName]
 
-    
-
-#
-# Exported utility decorators
-# ===========================
-#
-
-Object.defineProperty Also, exported, enumerable: true, value: require "./#{ exported }" for exported in [
-
-    #
-    # Also.validate.*
-    # ---------------
-    # 
-    # Validation decorators.
-    #
-    # TODO
-    # 
-
-    'validate'
-
-    #
-    # Also.inject.*
-    # -------------
-    # 
-    # Injection decorators. 
-    #
-    # TODO
-    # 
-
-    'inject'
-
-    #
-    # Also.deferral.*
-    # ---------------
-    # 
-    # Deferral decorators.
-    # 
-    # TODO
-    #
-
-    'deferral'
-
-    #
-    # TODO
-    #
-
-    'schedule'
-    'match'
-    'util'
-
-]
 
 
-module.exports = Also
-
-# module.exports =
-#     util:     require './util'
-#     match:    require './match'
-#     inject:   require './inject'
-#     schedule: require './schedule'
-#     deferral: require './deferral'
-#     validate: require './validate'
-
+if process? and process.title == 'node' then module.exports = nodeExport Also
