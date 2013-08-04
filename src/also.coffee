@@ -5,3 +5,4 @@ module.exports =
     inject:   require './inject'
     schedule: require './schedule'
     deferral: require './deferral'
+    validate: require './validate'
