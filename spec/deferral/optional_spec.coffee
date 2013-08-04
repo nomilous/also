@@ -43,7 +43,7 @@ describe 'OptionalDeferral', ->
         run 1, 2, 3
 
 
-    context 'opts.resolver', -> 
+    context 'Preparator.resolver', -> 
 
         it 'defines arg signature match for resolver injection', (done) -> 
 
@@ -129,6 +129,8 @@ describe 'OptionalDeferral', ->
 
             )
 
+    context 'Preparator.context', -> 
+
 
         it 'defaults the function call on `this` context', (done) -> 
 
@@ -197,13 +199,14 @@ describe 'OptionalDeferral', ->
                 done()
 
 
-        context 'can specify a timeout', -> 
+    context 'Preparator.timeout', -> 
 
-            it 'timeout, by default, rejects the promise'
 
-            it 'timeout can resolve the promise instead'
+        it 'rejects the promise by default'
 
-            it 'timeout notifies on the promise'
+        it 'can resolve the promise instead'
+
+        it 'notifies on the promise'
 
 
 

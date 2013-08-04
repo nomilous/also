@@ -1,11 +1,11 @@
 {defer}  = require 'when'
 {argsOf} = require '../util'
 
-module.exports = (opts, decoratedFn) -> 
+module.exports = (Preparator, decoratedFn) -> 
 
     #
-    # opts
-    # ----
+    # Preparator
+    # ----------
     # 
     # * resolver - specify argument signature name to inject resolver into
     # * context  - the object context to call the decoratedFn on
@@ -17,20 +17,18 @@ module.exports = (opts, decoratedFn) ->
     # resolvability into
     #
     
-    opts         ||= {}
-    decoratedFn  ||= opts
+    Preparator   ||= {}
+    decoratedFn  ||= Preparator
 
-    throw new Error 'expected function as last arg' unless typeof decoratedFn == 'function' 
+    throw new Error 'expected function as last arg' unless typeof decoratedFn == 'function'
+    if Preparator.resolver? then argPosition = argsOf( decoratedFn ).indexOf Preparator.resolver
 
     -> 
 
         deferral = defer()
-        opts.context = if typeof opts.context == 'undefined' then this else opts.context
+        Preparator.context = if typeof Preparator.context == 'undefined' then this else Preparator.context
 
-
-        if opts.resolver?
-
-            argPosition = argsOf( decoratedFn ).indexOf opts.resolver
+        if Preparator.resolver?
 
             if argPosition >= 0
 
@@ -47,17 +45,17 @@ module.exports = (opts, decoratedFn) ->
                 newArgs  = []
                 newArgs.push arg for arg in arguments
                 newArgs[ argPosition ] = resolver
-                decoratedFn.apply opts.context, newArgs
+                decoratedFn.apply Preparator.context, newArgs
 
             else
 
-                decoratedFn.apply opts.context, arguments
+                decoratedFn.apply Preparator.context, arguments
                 deferral.resolve()
                 
             return deferral.promise
 
 
-        decoratedFn.apply opts.context, arguments
+        decoratedFn.apply Preparator.context, arguments
         deferral.resolve()
         deferral.promise
         

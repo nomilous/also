@@ -18,11 +18,11 @@ Examples
 
 ```coffee
 
-{sync, async} = require( 'also' ).inject
+{inject} = require 'also'
 
 ducklings = 0
 ducks   = 0
-quark = sync 
+quark = inject.sync 
 
     beforeAll:  -> ducks++
     beforeEach: -> ducklings++
@@ -49,7 +49,7 @@ console.log quark quark quark quark quark quark quark()
 
 nodeModules = (names) -> require name for name in names 
         
-start = sync nodeModules, (crypto, zlib, net) -> 
+start = inject.sync nodeModules, (crypto, zlib, net) -> 
 
     #
     # ...
@@ -66,5 +66,5 @@ none. see [spec](https://github.com/nomilous/also/blob/master/spec/inject/async_
 todo
 ----
 
-* combine with Notice (hub) and run as daemon (script server for drone farm)
+* combine with Notice (hub) and run as daemon (script server for worker/drone farm)
 
