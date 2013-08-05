@@ -35,3 +35,44 @@ describe 'Validate.args', ->
 
         done()
 
+
+    context 'validate opts type object', -> 
+
+        schema = 
+            $address: 'module.class.function'
+            name:
+                first: {}
+                last: {}
+            address: 
+                street: {}
+
+                
+
+        class Person
+
+            constructor: Validate.args schema, (name, address) -> 
+
+
+        it 'validates for missing arguments', (done) ->
+
+            try 
+            
+                new Person
+
+            catch error
+
+                error.should.match /module.class.function\(name,address\) expects name/
+                done()
+
+
+        it 'checks for nested object properties', (done) -> 
+
+            try 
+            
+                new Person {}, {}
+
+            catch error
+
+                error.should.match /module.class.function\(name,address\) expects name.first, name.last and address.street/
+                done()
+
