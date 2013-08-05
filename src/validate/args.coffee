@@ -37,7 +37,7 @@ module.exports = (args...) ->
 
             ).map( (f) -> "#{argName}.#{f}" ).join ', '
 
-        ).join ' and '
+        ).filter( (f) -> [e] = f; e?  ).join ' and '
 
         if missing then throw new Error "#{address}(#{signature}) expects #{missing}"
         decoratedFn.apply this, arguments
