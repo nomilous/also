@@ -43,6 +43,7 @@ describe 'Validate.args', ->
             name:
                 first: {}
                 last: {}
+                species: $default: 'homo sapiens'
             address: 
                 street: {}
 
@@ -50,7 +51,7 @@ describe 'Validate.args', ->
 
         class Person
 
-            constructor: Validate.args schema, (name, address) -> 
+            constructor: Validate.args schema, (@name, @address) -> 
 
 
         it 'validates for missing arguments', (done) ->
@@ -75,4 +76,25 @@ describe 'Validate.args', ->
 
                 error.should.match /module.class.function\(name,address\) expects name.first, name.last and address.street/
                 done()
+
+        it 'defaults', (done) -> 
+
+            name = 
+                first: 'Sherlock'
+                last:  'Holmes'
+
+            address = 
+                street: ''
+
+            p = new Person name, address
+
+            p.name.species.should.equal 'homo sapiens'
+
+            # 
+            # perhaps it should not modify the origin
+            # 
+            # should.not.exist name.species
+            # 
+
+            done()
 

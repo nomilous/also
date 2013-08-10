@@ -30,9 +30,23 @@ module.exports = (args...) ->
             throw new Error "#{address}(#{signature}) expects #{argName}" unless arguments[position]
             (
                 for field of Preparator[argName]
+                    #
+                    # defaulting only works on nested (in hash) args
+                    #
+                    if Preparator[argName][field].$default?
+                        unless arguments[position][field]?
+                            arguments[position][field] = Preparator[argName][field].$default
+                        continue
+
                     continue if field.match /^\$/ 
                     continue if arguments[position][field]?
-                    continue if Preparator[argName][field].$required? and not Preparator[argName][field].$required   
+
+                    if Preparator[argName][field].$required? 
+                        continue unless Preparator[argName][field].$required
+
+                    #
+                    # field is missing and required and has no default
+                    # 
                     field 
 
             ).map( (f) -> "#{argName}.#{f}" ).join ', '
