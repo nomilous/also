@@ -1,4 +1,4 @@
-### Version 0.0.5 (unstable)
+### Version 0.0.6 (unstable)
 
 `npm install also`
 
