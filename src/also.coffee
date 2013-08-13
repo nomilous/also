@@ -8,7 +8,7 @@ localExports = {
 
     validate: {}
     inject:   {}
-    deferral: {}
+    # deferral: {}
     schedule: {}
     match:    {}
     util:     {}

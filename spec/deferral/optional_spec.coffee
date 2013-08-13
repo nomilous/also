@@ -1,255 +1,255 @@
-should           = require 'should'
-OptionalDeferral = require '../../lib/deferral/optional'
+# should           = require 'should'
+# OptionalDeferral = require '../../lib/deferral/optional'
 
-describe 'OptionalDeferral', -> 
+# describe 'OptionalDeferral', -> 
 
-    it 'returns a function', (done) ->
+#     it 'returns a function', (done) ->
 
-        OptionalDeferral(->).should.be.an.instanceof Function 
-        done()
-
-
-    it 'expects a function as last arg', (done) -> 
-
-        try OptionalDeferral {}, 1
-        catch error
-
-            error.should.match /expected function as last arg/
-            done()
+#         OptionalDeferral(->).should.be.an.instanceof Function 
+#         done()
 
 
-    it 'calling the returned function calls the function at last arg', (done) -> 
+#     it 'expects a function as last arg', (done) -> 
 
-        run = OptionalDeferral done
-        run()
+#         try OptionalDeferral {}, 1
+#         catch error
 
-    it 'returns a promise', (done) -> 
-
-        run = OptionalDeferral -> 
-        run().then.should.be.an.instanceof Function
-        done()
+#             error.should.match /expected function as last arg/
+#             done()
 
 
-    it 'passes existing args into fn', (done) -> 
+#     it 'calling the returned function calls the function at last arg', (done) -> 
 
-        run = OptionalDeferral (args...) -> 
+#         run = OptionalDeferral done
+#         run()
 
-                args.should.eql [1,2,3]
-                done()
+#     it 'returns a promise', (done) -> 
 
-        run 1, 2, 3
+#         run = OptionalDeferral -> 
+#         run().then.should.be.an.instanceof Function
+#         done()
 
 
-    context 'Preparator.resolver', -> 
+#     it 'passes existing args into fn', (done) -> 
 
-        it 'defines arg signature match for resolver injection', (done) -> 
+#         run = OptionalDeferral (args...) -> 
 
-            run = OptionalDeferral 
+#                 args.should.eql [1,2,3]
+#                 done()
 
-                resolver: 'resolve'
-                (arg, resolve) -> 
+#         run 1, 2, 3
 
-                    arg.should.equal 'ARG'
-                    resolve 'RESULT'
 
-            run('ARG').then (result) -> 
+#     context 'Preparator.resolver', -> 
 
-                result.should.equal 'RESULT'
-                done()
+#         it 'defines arg signature match for resolver injection', (done) -> 
 
-        it 'auto resolves AFTER running the fn if no arg matched as resolver', (done) -> 
+#             run = OptionalDeferral 
 
-            RUN = false
-            run = OptionalDeferral 
+#                 resolver: 'resolve'
+#                 (arg, resolve) -> 
 
-                resolver: 'done'
-                (arg1, resolver) -> 
+#                     arg.should.equal 'ARG'
+#                     resolve 'RESULT'
 
-                    RUN = true
+#             run('ARG').then (result) -> 
 
-            run( 'ARG1' ).then -> 
+#                 result.should.equal 'RESULT'
+#                 done()
 
-                RUN.should.equal true
-                done()
+#         it 'auto resolves AFTER running the fn if no arg matched as resolver', (done) -> 
+
+#             RUN = false
+#             run = OptionalDeferral 
+
+#                 resolver: 'done'
+#                 (arg1, resolver) -> 
+
+#                     RUN = true
+
+#             run( 'ARG1' ).then -> 
+
+#                 RUN.should.equal true
+#                 done()
 
         
-        it 'appends resolve, reject and notify as properties onto resolver', (done) ->
+#         it 'appends resolve, reject and notify as properties onto resolver', (done) ->
 
-            UPDATES = []
+#             UPDATES = []
 
-            run = OptionalDeferral 
+#             run = OptionalDeferral 
 
-                resolver: 'matchArg'
-                (arg, matchArg) -> 
+#                 resolver: 'matchArg'
+#                 (arg, matchArg) -> 
 
-                    #
-                    # for continuity
-                    #
+#                     #
+#                     # for continuity
+#                     #
 
-                    should.exist matchArg.resolve
-                    should.exist matchArg.reject
-                    should.exist matchArg.notify
+#                     should.exist matchArg.resolve
+#                     should.exist matchArg.reject
+#                     should.exist matchArg.notify
 
-                    #
-                    # for use as resolver: (done) -> done()
-                    #
+#                     #
+#                     # for use as resolver: (done) -> done()
+#                     #
 
-                    matchArg.should.equal matchArg.resolve
+#                     matchArg.should.equal matchArg.resolve
 
                     
-                    setTimeout (->
+#                     setTimeout (->
 
-                        matchArg.notify 'UPDATE 1'
+#                         matchArg.notify 'UPDATE 1'
 
-                    ), 10
-                    setTimeout (->
+#                     ), 10
+#                     setTimeout (->
 
-                        matchArg.notify 'UPDATE 2'
+#                         matchArg.notify 'UPDATE 2'
 
-                    ), 20
-                    setTimeout (->
+#                     ), 20
+#                     setTimeout (->
 
-                        matchArg.reject new Error 'error'
+#                         matchArg.reject new Error 'error'
 
-                    ), 30
+#                     ), 30
 
-            run().then( 
+#             run().then( 
 
-                (result) -> 
-                (error)  -> 
+#                 (result) -> 
+#                 (error)  -> 
 
-                    error.should.match /error/
-                    UPDATES.should.eql ['UPDATE 1', 'UPDATE 2']
-                    done()
+#                     error.should.match /error/
+#                     UPDATES.should.eql ['UPDATE 1', 'UPDATE 2']
+#                     done()
 
-                (notify) -> UPDATES.push notify
+#                 (notify) -> UPDATES.push notify
 
-            )
+#             )
 
-    context 'Preparator.context', -> 
-
-
-        it 'defaults the function call on `this` context', (done) -> 
-
-            class TestThatItWoksOnClasses
-                constructor: (@property) ->
-                promise: OptionalDeferral resolver: 'defer', (arg, defer) -> 
-
-                    defer.resolve @property + ' ' + arg
+#     context 'Preparator.context', -> 
 
 
-            test = new TestThatItWoksOnClasses 'VALUE'
-            promise = test.promise 'ARG'
-            promise.then (result) ->
+#         it 'defaults the function call on `this` context', (done) -> 
 
-                result.should.equal 'VALUE ARG'
-                done()
+#             class TestThatItWoksOnClasses
+#                 constructor: (@property) ->
+#                 promise: OptionalDeferral resolver: 'defer', (arg, defer) -> 
 
-
-        it 'can specify null as alternative object context', (done) -> 
-
-            obj = new Object
-
-                property: 'VALUE'
-                promise: OptionalDeferral 
-
-                    resolver: 'defer'
-                    context: null
-
-                    (arg, defer) -> 
-
-                        #
-                        # context was set to null / global
-                        #
-
-                        defer.resolve @process.title
-
-            obj.promise().then (result) -> 
-
-                result.should.equal 'node'
-                done()
-
-        it 'can specify another object as context', (done) -> 
-
-            obj1 = new Object 
-                property: 'A'
-
-            obj2 = new Object 
-                property: 'B'
-                promise: OptionalDeferral 
-
-                    resolver: 'defer'
-                    context: obj1
-
-                    (defer) -> 
-
-                        #
-                        # @property refers to value at instance: obj1
-                        #
-
-                        defer.resolve @property
+#                     defer.resolve @property + ' ' + arg
 
 
-            obj2.promise().then (result) -> 
+#             test = new TestThatItWoksOnClasses 'VALUE'
+#             promise = test.promise 'ARG'
+#             promise.then (result) ->
 
-                result.should.equal 'A'
-                done()
+#                 result.should.equal 'VALUE ARG'
+#                 done()
 
 
-    context 'Preparator.timeout', -> 
+#         it 'can specify null as alternative object context', (done) -> 
 
-        it 'rejects the promise by default', (done) -> 
+#             obj = new Object
 
-            run = OptionalDeferral 
+#                 property: 'VALUE'
+#                 promise: OptionalDeferral 
 
-                resolver: 'defer'
-                timeout: 10
-                (defer) -> 
+#                     resolver: 'defer'
+#                     context: null
 
-                    # defer.notify 'update'
+#                     (arg, defer) -> 
 
-            run().then null, 
+#                         #
+#                         # context was set to null / global
+#                         #
 
-                (error) -> 
+#                         defer.resolve @process.title
 
-                    error.should.match /timeout/
-                    done()
+#             obj.promise().then (result) -> 
 
-                # (update) -> console.log update: update
+#                 result.should.equal 'node'
+#                 done()
+
+#         it 'can specify another object as context', (done) -> 
+
+#             obj1 = new Object 
+#                 property: 'A'
+
+#             obj2 = new Object 
+#                 property: 'B'
+#                 promise: OptionalDeferral 
+
+#                     resolver: 'defer'
+#                     context: obj1
+
+#                     (defer) -> 
+
+#                         #
+#                         # @property refers to value at instance: obj1
+#                         #
+
+#                         defer.resolve @property
+
+
+#             obj2.promise().then (result) -> 
+
+#                 result.should.equal 'A'
+#                 done()
+
+
+#     context 'Preparator.timeout', -> 
+
+#         it 'rejects the promise by default', (done) -> 
+
+#             run = OptionalDeferral 
+
+#                 resolver: 'defer'
+#                 timeout: 10
+#                 (defer) -> 
+
+#                     # defer.notify 'update'
+
+#             run().then null, 
+
+#                 (error) -> 
+
+#                     error.should.match /timeout/
+#                     done()
+
+#                 # (update) -> console.log update: update
             
 
 
-        it 'can resolve the promise instead', (done) -> 
+#         it 'can resolve the promise instead', (done) -> 
 
-            run = OptionalDeferral 
+#             run = OptionalDeferral 
 
-                resolver: 'defer'
-                timeout: 10
-                resolveOnTimeout: true
-                (defer) -> 
-
-
-            run().then (result) -> 
-
-                should.not.exist result
-                done()
+#                 resolver: 'defer'
+#                 timeout: 10
+#                 resolveOnTimeout: true
+#                 (defer) -> 
 
 
-        it 'notifies on the promise', (done) -> 
+#             run().then (result) -> 
 
-            run = OptionalDeferral 
-
-                resolver: 'defer'
-                timeout: 10
-                resolveOnTimeout: true
-                (defer) -> 
+#                 should.not.exist result
+#                 done()
 
 
-            run().then null, null, (update) ->
+#         it 'notifies on the promise', (done) -> 
 
-                update.should.eql event: 'timeout'
-                done()
+#             run = OptionalDeferral 
+
+#                 resolver: 'defer'
+#                 timeout: 10
+#                 resolveOnTimeout: true
+#                 (defer) -> 
+
+
+#             run().then null, null, (update) ->
+
+#                 update.should.eql event: 'timeout'
+#                 done()
 
 
 
-    
+#     
