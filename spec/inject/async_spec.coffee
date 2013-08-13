@@ -565,21 +565,3 @@ context 'Preparator.afterAll', ->
             thing.numbers.should.eql [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ]
             done()
 
-
-    it 'calls onTimeout with resolver to allow handling timoeut in context', (done) -> 
-
-        fn = Async 
-            parallel: false
-            timeout: 100
-            onTimeout: (done, detail, context) -> 
-
-                detail.type.should.equal 'fn'
-                done()
-                    
-            (done) -> 
-
-                #
-                # fn, does not call done
-                #
-
-        fn().then -> done()

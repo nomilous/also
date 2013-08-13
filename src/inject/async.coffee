@@ -16,7 +16,6 @@ module.exports = (Preparator, decoratedFn) ->
 
         throw new Error 'also.inject.async(Preparator, decoratedFn) requires Preparator as object'
 
-    Preparator.timeout  = 0 unless Preparator.timeout?
     Preparator.parallel = true unless Preparator.parallel?
 
     do (
@@ -115,64 +114,21 @@ module.exports = (Preparator, decoratedFn) ->
                 inject = []
                 inject.push arg for arg in args
 
-                fnDone = (result) ->
+                resolver = (result) ->
 
                     _id = id
-                    clearTimeout queue[id].timer if Preparator.timeout?    
                     return queue[id].defer.reject result if result instanceof Error
                     finished.notify result: result
                     return queue[id].defer.resolve result
 
                 queue[id] = 
                     done:      false
-                    timeout:   false
                     defer:     Defer()
                     altDefer:  false
                     first:     []
                     last:      []
                     args:      inject
-                
-                if Preparator.timeout != 0
-
-                    queue[id].timer = setTimeout (->
-
-                        #
-                        # timeout as special case error, does not reject any promises
-                        # but instead calls onTimeout, if defined
-                        # 
-                        # onTimeout is provided a resolver (done) as agr1, and should call
-                        # call it when done handling the timeout
-                        #
-
-                        # queue[id].timeout = true
-                        # queue[id].defer.notify
-                        #     type: 'timeout'
-                        #     context: context
-                        #     element: queue[id]
-
-                        if typeof Preparator.onTimeout == 'function' 
-
-                            Preparator.onTimeout fnDone, 
-
-                                type: 'fn'
-
-                                # 
-                                # later, before and after hooks can timout too
-                                # 
-                                # type: 'beforeAll'
-                                # type: 'beforeEach'
-                                # type: 'afterEach'
-                                # type: 'afterAll'
-                                # 
-
-                                context
-
-
-                        else
-
-                            fnDone()
-
-                    ), Preparator.timeout 
+              
 
                 beforeEach = -> 
 
@@ -199,7 +155,7 @@ module.exports = (Preparator, decoratedFn) ->
 
                     else
 
-                        decoratedFn.apply this, [ fnDone ].concat queue[id].first.concat( inject ).concat queue[id].last
+                        decoratedFn.apply this, [ resolver ].concat queue[id].first.concat( inject ).concat queue[id].last
 
                     return queue[id].defer.promise
 
@@ -226,7 +182,6 @@ module.exports = (Preparator, decoratedFn) ->
                     _id   = id
                     defer = Defer()
                     queue[id].done = true
-                    clearTimeout queue[id].timer if Preparator.timeout?
 
                     return defer.resolve() unless queueRemainingLength() == 0
                     unless typeof Preparator.afterAll is 'function'
