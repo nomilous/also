@@ -151,6 +151,25 @@ context 'promise', ->
             result.should.equal 'RESULT: AB'
             done()
 
+context 'Preparator.context', -> 
+
+    it 'sets the object context to run the decoratedFn on', (done) -> 
+
+        thing = {}
+
+        fn = Async 
+            context: thing
+            (done, arg2) -> 
+                @property = 'value'
+                done()
+
+        fn( 'arg2' ).then -> 
+
+            thing.property.should.equal 'value'
+            done()
+
+
+    it 'defaults to this'
 
 
 context 'Preparator.beforeAll()', ->

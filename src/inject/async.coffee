@@ -17,6 +17,7 @@ module.exports = (Preparator, decoratedFn) ->
         throw new Error 'also.inject.async(Preparator, decoratedFn) requires Preparator as object'
 
     Preparator.parallel = true unless Preparator.parallel?
+    Preparator.context = this unless Preparator.context?
 
     do (
 
@@ -151,11 +152,11 @@ module.exports = (Preparator, decoratedFn) ->
                     _id = id
                     if queue[id].altDefer
 
-                        decoratedFn.apply this, queue[id].first.concat( inject ).concat queue[id].last
+                        decoratedFn.apply Preparator.context, queue[id].first.concat( inject ).concat queue[id].last
 
                     else
 
-                        decoratedFn.apply this, [ resolver ].concat queue[id].first.concat( inject ).concat queue[id].last
+                        decoratedFn.apply Preparator.context, [ resolver ].concat queue[id].first.concat( inject ).concat queue[id].last
 
                     return queue[id].defer.promise
 
