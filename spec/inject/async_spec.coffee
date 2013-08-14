@@ -172,6 +172,40 @@ context 'Preparator.context', ->
     it 'defaults to this'
 
 
+context 'Preparator.notifyOnError', -> 
+
+    it 'notifies on error if true', (done) -> 
+
+        ERROR = undefined
+        fn = Async 
+
+            notifyOnError: true
+            -> throw new Error 'moo'
+
+        fn().then(
+            -> done()
+            -> 
+            (notify)  -> 
+
+                notify.event.should.equal 'error'
+                notify.error.should.match /moo/
+                notify.defer.resolve()
+
+        )
+
+    it 'defaults to reject on error', (done) -> 
+
+        fn = Async -> throw new Error 'moo'
+
+        fn().then( 
+            ->
+            (error) -> 
+                error.should.match /moo/
+                done()
+        )
+
+
+
 context 'Preparator.beforeAll()', ->
 
 

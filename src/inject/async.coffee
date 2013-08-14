@@ -16,8 +16,9 @@ module.exports = (Preparator, decoratedFn) ->
 
         throw new Error 'also.inject.async(Preparator, decoratedFn) requires Preparator as object'
 
-    Preparator.parallel = true unless Preparator.parallel?
-    Preparator.context = this unless Preparator.context?
+    Preparator.parallel      = true  unless Preparator.parallel?
+    Preparator.context       = this  unless Preparator.context?
+    Preparator.notifyOnError = false unless Preparator.notifyOnError?
 
     do (
 
@@ -150,15 +151,32 @@ module.exports = (Preparator, decoratedFn) ->
                 callDecoratedFn = -> 
 
                     _id = id
-                    if queue[id].altDefer
+                    element = queue[id]
+                    process.nextTick -> 
 
-                        decoratedFn.apply Preparator.context, queue[id].first.concat( inject ).concat queue[id].last
+                        try 
 
-                    else
+                            if element.altDefer
 
-                        decoratedFn.apply Preparator.context, [ resolver ].concat queue[id].first.concat( inject ).concat queue[id].last
+                                decoratedFn.apply Preparator.context, element.first.concat( inject ).concat element.last
 
-                    return queue[id].defer.promise
+                            else 
+
+                                decoratedFn.apply Preparator.context, [ resolver ].concat element.first.concat( inject ).concat element.last
+
+                        catch error
+
+                            return element.defer.reject error unless Preparator.notifyOnError 
+
+                            #
+                            # set to notifyOnError, send error as notification and include the 
+                            # deferral for resolution by the handler
+                            #
+
+                            element.defer.notify event: 'error', error: error, defer: element.defer
+
+
+                    return element.defer.promise
 
 
                 afterEach = -> 
