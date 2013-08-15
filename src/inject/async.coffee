@@ -18,7 +18,7 @@ module.exports = (Preparator, decoratedFn) ->
 
     Preparator.parallel      = true  unless Preparator.parallel?
     Preparator.context       = this  unless Preparator.context?
-    Preparator.notifyOnError = false unless Preparator.notifyOnError?
+    Preparator.onError
 
     do (
 
@@ -58,12 +58,29 @@ module.exports = (Preparator, decoratedFn) ->
             # 
 
             done = (result) ->
-  
-                return defer.reject result if result instanceof Error
+
+                if result instanceof Error
+
+                    return defer.reject result unless typeof Preparator.onError == 'function'
+
+                    #
+                    # onError handler can be defined to avoid rejection on error
+                    # 
+                    # * this allows an async error handler to suspend flow of 
+                    #   control while the error is being handled
+                    # 
+                    # * it is up to the handler to resolve/reject the deferral
+                    #
+
+                    Preparator.onError 'beforeAll', result, defer
+                    return 
+
                 return defer.resolve result
 
             Preparator.beforeAll done, context
             return defer.promise
+
+
 
 
         Object.defineProperty context, 'args',      
@@ -138,9 +155,15 @@ module.exports = (Preparator, decoratedFn) ->
                     return defer.resolve() unless typeof Preparator.beforeEach is 'function'
 
                     done = (result) ->
-                        _id = id
+
                         finished.notify beforeEach: result
-                        return defer.reject result if result instanceof Error
+
+                        if result instanceof Error
+
+                            finished.notify beforeEach: result
+                            return defer.reject result unless typeof Preparator.onError is 'function'
+                            return Preparator.onError 'beforeEach', result, defer
+                            
                         return defer.resolve result
 
                     _id = id
@@ -166,14 +189,13 @@ module.exports = (Preparator, decoratedFn) ->
 
                         catch error
 
-                            return element.defer.reject error unless Preparator.notifyOnError 
+                            if typeof Preparator.onError == 'function'
 
-                            #
-                            # set to notifyOnError, send error as notification and include the 
-                            # deferral for resolution by the handler
-                            #
+                                Preparator.onError 'fn', error, element.defer
+                                return
 
-                            element.defer.notify event: 'error', error: error, defer: element.defer
+
+                            element.defer.reject error
 
 
                     return element.defer.promise
@@ -187,10 +209,16 @@ module.exports = (Preparator, decoratedFn) ->
                     return defer.resolve() unless typeof Preparator.afterEach is 'function'
 
                     done = (result) ->
-                        _id = id
+
                         finished.notify afterEach: result
-                        return defer.reject result if result instanceof Error
+
+                        if result instanceof Error
+
+                            return defer.reject result unless typeof Preparator.onError is 'function'
+                            return Preparator.onError 'afterEach', result, defer
+
                         return defer.resolve result
+
                     
                     Preparator.afterEach done, context
                     return defer.promise
@@ -216,7 +244,12 @@ module.exports = (Preparator, decoratedFn) ->
                     done = (result) ->
                         _id = -1
                         queue.length = 0
-                        return defer.reject result if result instanceof Error
+
+                        if result instanceof Error
+
+                            return defer.reject result unless typeof Preparator.onError is 'function'
+                            return Preparator.onError 'afterAll', result, defer
+
                         return defer.resolve result
                     
                     _id = -1
@@ -240,15 +273,8 @@ module.exports = (Preparator, decoratedFn) ->
                         finished.resolve results[2]
                         # [3] afterEach result
 
-                    (error) -> 
-                        _id = id
-                        Preparator.onError error, context if Preparator.onError instanceof Function
-                        finished.reject error
-
-                    (status) -> 
-                        _id = id
-                        Preparator.onNotify status, context if Preparator.onNotify instanceof Function
-                        finished.notify status
+                    (error)  -> finished.reject error
+                    (status) -> finished.notify status
 
                 )
 

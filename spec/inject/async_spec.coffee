@@ -151,6 +151,7 @@ context 'promise', ->
             result.should.equal 'RESULT: AB'
             done()
 
+
 context 'Preparator.context', -> 
 
     it 'sets the object context to run the decoratedFn on', (done) -> 
@@ -172,37 +173,16 @@ context 'Preparator.context', ->
     it 'defaults to this'
 
 
-context 'Preparator.notifyOnError', -> 
+context 'Preparator.onError', -> 
 
-    it 'notifies on error if true', (done) -> 
+    it 'is called on error', (done) -> 
 
-        ERROR = undefined
         fn = Async 
 
-            notifyOnError: true
-            -> throw new Error 'moo'
+            onError: -> done()
+            -> throw new Error 'Errors need to be handles asynchronously'
 
-        fn().then(
-            -> done()
-            -> 
-            (notify)  -> 
-
-                notify.event.should.equal 'error'
-                notify.error.should.match /moo/
-                notify.defer.resolve()
-
-        )
-
-    it 'defaults to reject on error', (done) -> 
-
-        fn = Async -> throw new Error 'moo'
-
-        fn().then( 
-            ->
-            (error) -> 
-                error.should.match /moo/
-                done()
-        )
+        fn()
 
 
 
@@ -295,10 +275,26 @@ context 'Preparator.beforeAll()', ->
         fn = Async 
 
             beforeAll: (done) -> done( new Error 'beforeAll failed' )
-            onError: (error) -> 
+            onError: (type, error, deferral) ->
+
+                type.should.equal 'beforeAll'
                 error.should.match /beforeAll failed/
+                deferral.reject()
                 done()
+
+
             -> console.log 'SHOULD NOT RUN'
+
+        fn()
+
+
+    it 'allows beforeAll to indicate failure into error handler and still resolve', (done) -> 
+
+        fn = Async 
+
+            beforeAll: (done) -> done( new Error 'beforeAll failed' )
+            onError: (type, error, deferral) -> deferral.resolve()
+            -> done()
 
         fn()
 
@@ -319,6 +315,32 @@ context 'Preparator.beforeAll()', ->
                 done()
 
         fn('another arg').then -> done()
+
+
+
+    it 'allows beforeAll to suspend flow while the error is handled', (done) -> 
+
+        fn = Async
+
+            beforeAll: (done, context) -> done( new Error 'beforeAll failed' )
+            onError: (type, error, deferral) -> setTimeout deferral.resolve, 100
+            (done) -> done()
+
+
+        RUN = false
+        fn().then -> RUN = true
+
+        setTimeout (->
+            RUN.should.equal false
+        ), 50
+
+        setTimeout (->
+            RUN.should.equal true
+            done()
+        ), 150
+
+
+
 
 context 'Preparator.beforeEach()', -> 
 
@@ -387,6 +409,61 @@ context 'Preparator.beforeEach()', ->
         )
 
 
+
+    it 'employs alternate error handler if present and can resolve to still run fn', (done) -> 
+
+        fn = Async 
+
+            beforeEach: (done) -> done( new Error 'beforeEach failed' )
+            onError: (type, error, deferral) -> deferral.resolve()
+            -> done()
+
+        fn()
+
+
+    it 'employs alternate error handler if present and can reject to not run fn', (done) -> 
+
+        fn = Async 
+
+            beforeEach: (done) -> done( new Error 'beforeEach failed' )
+            onError: (type, error, deferral) -> 
+            
+                type.should.equal 'beforeEach'
+                deferral.reject()
+                done()
+
+            -> console.log 'SHOULD NOT RUN'
+
+        fn()
+
+
+
+    it 'allows beforeEach to suspend flow while the error is handled', (done) -> 
+
+        fn = Async
+
+            beforeEach: (done, context) -> done( new Error 'beforeEach failed' )
+            onError: (type, error, deferral) -> setTimeout deferral.resolve, 100
+            (done) -> done()
+
+
+        RUN = false
+        fn().then -> RUN = true
+
+        setTimeout (->
+            RUN.should.equal false
+        ), 50
+
+        setTimeout (->
+            RUN.should.equal true
+            done()
+        ), 150
+
+
+
+
+
+
 context 'Preparator.afterEach()', ->
 
     it 'runs after the call to decoratedFn', (done) ->
@@ -432,6 +509,78 @@ context 'Preparator.afterEach()', ->
             done()
 
 
+    it 'employs alternate error handler if present and can reject', (done) -> 
+
+        fn = Async 
+
+            afterEach: (done) -> done( new Error 'afterEach failed' )
+            onError: (type, error, deferral) -> 
+
+                type.should.equal 'afterEach'
+                deferral.reject error
+
+            (done) -> done() 
+
+        fn().then(
+
+            ->
+            (error) -> 
+                error.should.match /afterEach failed/
+                done()
+            -> 
+
+        )
+
+
+    it 'employs alternate error handler if present and can resolve to allow afterall to still run', (done) -> 
+
+        fn = Async 
+
+            afterEach: (done) -> done( new Error 'afterEach failed' )
+            onError: (type, error, deferral) -> 
+
+                type.should.equal 'afterEach'
+                deferral.resolve()
+
+            afterAll: -> 
+
+                #
+                # afterAll still runs
+                # 
+
+                done()
+
+            (done) -> done() 
+
+        fn()
+
+
+    it 'allows afterEach to suspend flow while the error is handled', (done) -> 
+
+        fn = Async
+
+            afterEach: (done, context) -> done( new Error 'afterEach failed' )
+            onError: (type, error, deferral) -> setTimeout deferral.resolve, 100
+            (done) -> done()
+
+
+        RUN = false
+        fn().then -> RUN = true
+
+        setTimeout (->
+            RUN.should.equal false
+        ), 50
+
+        setTimeout (->
+            RUN.should.equal true
+            done()
+        ), 150
+
+
+
+
+
+
 context 'Preparator.parallel', -> 
 
     it 'can be set to false to run calls in sequence', (done) -> 
@@ -472,6 +621,8 @@ context 'Preparator.parallel', ->
         fn( 5 ).then -> 
             #console.log RAN
             done()
+
+
 
 context 'Preparator.afterAll', -> 
 
@@ -535,6 +686,70 @@ context 'Preparator.afterAll', ->
             # console.log COUNT
             # console.log RAN
             done()
+
+
+    it 'employs alternate error handler if present and can reject', (done) -> 
+
+        fn = Async 
+
+            afterAll: (done) -> done( new Error 'afterAll failed' )
+            onError: (type, error, deferral) -> 
+
+                type.should.equal 'afterAll'
+                deferral.reject error
+
+            (done) -> done() 
+
+        fn().then(
+
+            ->
+            (error) -> 
+                error.should.match /afterAll failed/
+                done()
+            -> 
+
+        )
+
+
+    it 'employs alternate error handler if present and can resolve', (done) -> 
+
+        fn = Async 
+
+            afterAll: (done) -> done( new Error 'afterAll failed' )
+            onError: (type, error, deferral) -> 
+
+                type.should.equal 'afterAll'
+                deferral.resolve()
+
+            (done) -> done() 
+
+
+        fn().then -> done()
+
+
+
+    it 'allows afterAll to suspend flow while the error is handled', (done) -> 
+
+        fn = Async
+
+            afterAll: (done, context) -> done( new Error 'afterAll failed' )
+            onError: (type, error, deferral) -> setTimeout deferral.resolve, 300
+            (done) -> done()
+
+
+        RUN = false
+        fn().then -> RUN = true
+
+        setTimeout (->
+            RUN.should.equal false
+        ), 50
+
+        setTimeout (->
+            RUN.should.equal true
+            done()
+        ), 310
+
+
 
     it 'supports beforeEach, beforeAll and afterEach', (done) -> 
 
