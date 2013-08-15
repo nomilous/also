@@ -460,7 +460,17 @@ context 'Preparator.beforeEach()', ->
         ), 150
 
 
+    it 'can call to skip the function injection but still resolve', (done) -> 
 
+        RAN = false
+        fn  = Async
+            beforeEach: (done, context) -> context.skip(); done()
+            (done) -> RAN = true
+
+        fn().then -> 
+
+            RAN.should.equal false
+            done()
 
 
 

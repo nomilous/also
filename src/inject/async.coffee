@@ -123,6 +123,12 @@ module.exports = (Preparator, decoratedFn) ->
             enumerable: true
             get: -> queue[_id]
 
+
+        Object.defineProperty context, 'skip',
+            enumerable: true
+            get: -> -> queue[_id].skip = true
+
+
         return ->
 
             finished = Defer()
@@ -175,6 +181,8 @@ module.exports = (Preparator, decoratedFn) ->
 
                     _id = id
                     element = queue[id]
+                    return element.defer.resolve() if element.skip
+
                     process.nextTick -> 
 
                         try 
@@ -205,7 +213,6 @@ module.exports = (Preparator, decoratedFn) ->
 
                     _id   = id
                     defer = Defer()
-                    
                     return defer.resolve() unless typeof Preparator.afterEach is 'function'
 
                     done = (result) ->
