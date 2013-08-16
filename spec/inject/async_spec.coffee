@@ -180,10 +180,52 @@ context 'Preparator.onError', ->
         fn = Async 
 
             onError: -> done()
-            -> throw new Error 'Errors need to be handles asynchronously'
+            -> throw new Error 'Errors sometimes need to be handled asynchronously'
 
         fn()
 
+
+    it 'can determine that the error should be passed onward to rejection', (done) -> 
+
+        fn = Async
+
+            onError: (done, context, error) -> 
+
+                done error
+
+            -> throw new Error 'Errors sometimes need to be handled asynchronously'
+
+
+        fn().then( 
+
+            ->
+            (error) -> 
+                error.should.match /sometimes/
+                done()
+            -> 
+
+        )
+
+    it 'can determine that the error was resolvable', (done) -> 
+
+        fn = Async
+
+            onError: (done, context, error) -> 
+
+                done 'Not error.'
+
+            -> throw new Error 'Errors sometimes need to be handled asynchronously'
+
+
+        fn().then( 
+
+            (result) -> 
+                result.should.equal 'Not error.'
+                done()
+            -> 
+            -> 
+
+        )
 
 
 context 'Preparator.beforeAll()', ->
@@ -275,17 +317,25 @@ context 'Preparator.beforeAll()', ->
         fn = Async 
 
             beforeAll: (done) -> done( new Error 'beforeAll failed' )
-            onError: (type, error, deferral) ->
+            onError: (done, context, error) ->
 
-                type.should.equal 'beforeAll'
                 error.should.match /beforeAll failed/
-                deferral.reject()
-                done()
+
+                #
+                # can pass the error straight through
+                #
+                
+                done error
 
 
             -> console.log 'SHOULD NOT RUN'
 
-        fn()
+        fn().then(
+
+            ->
+            -> done()
+
+        )
 
 
     it 'allows beforeAll to indicate failure into error handler and still resolve', (done) -> 
@@ -293,7 +343,7 @@ context 'Preparator.beforeAll()', ->
         fn = Async 
 
             beforeAll: (done) -> done( new Error 'beforeAll failed' )
-            onError: (type, error, deferral) -> deferral.resolve()
+            onError: (done, error) -> done()
             -> done()
 
         fn()
@@ -323,7 +373,7 @@ context 'Preparator.beforeAll()', ->
         fn = Async
 
             beforeAll: (done, context) -> done( new Error 'beforeAll failed' )
-            onError: (type, error, deferral) -> setTimeout deferral.resolve, 100
+            onError: (done, context, error) -> setTimeout done, 100
             (done) -> done()
 
 
@@ -415,7 +465,7 @@ context 'Preparator.beforeEach()', ->
         fn = Async 
 
             beforeEach: (done) -> done( new Error 'beforeEach failed' )
-            onError: (type, error, deferral) -> deferral.resolve()
+            onError: (done, context, error) -> done()
             -> done()
 
         fn()
@@ -426,15 +476,18 @@ context 'Preparator.beforeEach()', ->
         fn = Async 
 
             beforeEach: (done) -> done( new Error 'beforeEach failed' )
-            onError: (type, error, deferral) -> 
+            onError: (done, context, error) -> 
             
-                type.should.equal 'beforeEach'
-                deferral.reject()
-                done()
+                done error
 
             -> console.log 'SHOULD NOT RUN'
 
-        fn()
+        fn().then( 
+
+            ->
+            -> done()
+
+        )
 
 
 
@@ -443,7 +496,7 @@ context 'Preparator.beforeEach()', ->
         fn = Async
 
             beforeEach: (done, context) -> done( new Error 'beforeEach failed' )
-            onError: (type, error, deferral) -> setTimeout deferral.resolve, 100
+            onError: (done, context, error) -> setTimeout done, 100
             (done) -> done()
 
 
@@ -519,15 +572,14 @@ context 'Preparator.afterEach()', ->
             done()
 
 
-    it 'employs alternate error handler if present and can reject', (done) -> 
+    it 'employs alternate error handler if present and can reject onward', (done) -> 
 
         fn = Async 
 
             afterEach: (done) -> done( new Error 'afterEach failed' )
-            onError: (type, error, deferral) -> 
-
-                type.should.equal 'afterEach'
-                deferral.reject error
+            onError: (done, context, error) -> 
+  
+                done error
 
             (done) -> done() 
 
@@ -547,10 +599,9 @@ context 'Preparator.afterEach()', ->
         fn = Async 
 
             afterEach: (done) -> done( new Error 'afterEach failed' )
-            onError: (type, error, deferral) -> 
+            onError: (done, context, error) -> 
 
-                type.should.equal 'afterEach'
-                deferral.resolve()
+                done()
 
             afterAll: -> 
 
@@ -570,7 +621,7 @@ context 'Preparator.afterEach()', ->
         fn = Async
 
             afterEach: (done, context) -> done( new Error 'afterEach failed' )
-            onError: (type, error, deferral) -> setTimeout deferral.resolve, 100
+            onError: (done, context, error) -> setTimeout done, 100
             (done) -> done()
 
 
@@ -703,10 +754,9 @@ context 'Preparator.afterAll', ->
         fn = Async 
 
             afterAll: (done) -> done( new Error 'afterAll failed' )
-            onError: (type, error, deferral) -> 
+            onError: (done, context, error) -> 
 
-                type.should.equal 'afterAll'
-                deferral.reject error
+                done error
 
             (done) -> done() 
 
@@ -726,10 +776,9 @@ context 'Preparator.afterAll', ->
         fn = Async 
 
             afterAll: (done) -> done( new Error 'afterAll failed' )
-            onError: (type, error, deferral) -> 
+            onError: (done, context, error) -> 
 
-                type.should.equal 'afterAll'
-                deferral.resolve()
+                done()
 
             (done) -> done() 
 
@@ -743,7 +792,7 @@ context 'Preparator.afterAll', ->
         fn = Async
 
             afterAll: (done, context) -> done( new Error 'afterAll failed' )
-            onError: (type, error, deferral) -> setTimeout deferral.resolve, 300
+            onError: (done, context, error) -> setTimeout done, 300
             (done) -> done()
 
 
