@@ -12,7 +12,7 @@
   "main": "./lib/also",
   "repository": "git@github.com:nomilous/also.git",
   "dependencies": {
-    "when": "~2.1.0"
+    "when": "~2.3.0"
   },
   "devDependencies": {
     "should": "~1.2.2",
