@@ -12,7 +12,8 @@
   "main": "./lib/also",
   "repository": "git@github.com:nomilous/also.git",
   "dependencies": {
-    "when": "~2.3.0"
+    "when": "~2.3.0",
+    "node-uuid": "~1.4.1"
   },
   "devDependencies": {
     "should": "~1.2.2",

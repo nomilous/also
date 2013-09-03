@@ -13,30 +13,30 @@ Function decorators?: [Coffeescript Ristretto](https://leanpub.com/coffeescript-
 Examples
 --------
 
-### synchronous example with ducks
+### synchronous example with fairy tale
 
 
 ```coffee
 
+Dwarves     = 0
+SnowWhites  = 0
+
 {inject} = require 'also'
 
-ducklings = 0
-ducks   = 0
-quark = inject.sync 
+Hi = Ho = inject.sync
 
-    beforeAll:  -> ducks++
-    beforeEach: -> ducklings++
+    beforeAll:  -> SnowWhites++
+    beforeEach: -> Dwarves++
 
     -> 
 
-        ducks: ducks
-        ducklings: ducklings
-        
+        SnowWhites: SnowWhites, Dwarves: Dwarves
 
 
-console.log quark quark quark quark quark quark quark()
 
-# => { ducks: 1, ducklings: 7 }
+Hi Ho, Hi Ho, Hi Ho Hi Ho, Hi Ho()
+
+# => { SnowWhites: 1, Dwarves: 7 }
 
 
 ```

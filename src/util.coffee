@@ -1,3 +1,5 @@
+uuid = require 'node-uuid'
+
 module.exports = 
 
     argsOf: (fn) -> 
@@ -20,3 +22,4 @@ module.exports =
 
             []
 
+    uuid: uuid.v1

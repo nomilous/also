@@ -106,28 +106,44 @@ describe 'Sync', ->
     context 'Preparator as object', -> 
 
 
-        it 'appropriately calls beforeAll and beforeEach', (done) -> 
+        it 'appropriately calls beforeAll and beforeEach', -> 
 
-            ducks     = 0
-            ducklings = 0
-            quark     = Sync(
+            Dwarves     = 0
+            SnowWhites  = 0
 
-                #
-                # before the decorated function
-                #
-                beforeAll:  -> ducks++
-                beforeEach: -> ducklings++
+            Hi = Ho = Sync
 
-                #
-                # the decorated function
-                #
-                ->
-                    ducks.should.equal 1  
-                    if ducklings > 7 then done() # 8th()
+                beforeAll:  -> SnowWhites++
+                beforeEach: -> Dwarves++
 
-            )
+                -> 
 
-            quark quark quark quark quark quark quark quark()
+                    SnowWhites: SnowWhites, Dwarves: Dwarves
+
+            
+
+            console.log Hi Ho, Hi Ho, Hi Ho Hi Ho, Hi Ho()
+
+            # ducks     = 0
+            # ducklings = 0
+            # quark     = Sync(
+
+            #     #
+            #     # before the decorated function
+            #     #
+            #     beforeAll:  -> ducks++
+            #     beforeEach: -> ducklings++
+
+            #     #
+            #     # the decorated function
+            #     #
+            #     ->
+            #         ducks.should.equal 1  
+            #         if ducklings > 7 then done() # 8th()
+
+            # )
+
+            # quark quark quark quark quark quark quark quark()
 
 
 
