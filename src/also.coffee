@@ -12,6 +12,7 @@ localExports = {
     schedule: {}
     match:    {}
     util:     {}
+    defers:   {}
 
 }
 
