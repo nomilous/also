@@ -9,6 +9,7 @@ localExports = {
     validate: {}
     inject:   {}
     deferred: {}
+    enclose:  {}
     schedule: {}
     match:    {}
     util:     {}
