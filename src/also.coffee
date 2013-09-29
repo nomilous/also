@@ -8,7 +8,17 @@ localExports = {
 
     validate: {}
     inject:   {}
+
+    # 
+    # proxiing some functionality from when 
+    # for convenience
+    # 
+
     deferred: {}
+    sequence: {}
+    pipeline: {}
+    parallel: {}
+
     enclose:  {}
     schedule: {}
     match:    {}
