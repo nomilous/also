@@ -19,29 +19,34 @@ describe 'defers', ->
                 done()
         )
 
-    xit 'NOPE!! notifies in a pipeline', (done) -> 
+    it 'notifies in a pipeline', (done) -> 
 
         pipeline = require 'when/pipeline'
-
         N = []
         pipeline([
 
-            -> deferred ({resolve, notify}) -> 
-
+            deferred ({resolve, notify}) -> 
                 process.nextTick -> 
                     notify 1
                     process.nextTick -> 
                         resolve()
 
+            deferred ({resolve, notify}) -> 
+                process.nextTick -> 
+                    notify 2
+                    process.nextTick -> 
+                        resolve()
 
         ]).then(
 
-            -> console.log N
+            -> 
+                N.should.eql [1, 2]
+                done()
             ->
             (n) -> N.push n 
         )
 
-    xit 'NOPE!! notifies in a pipeline natively', (done) -> 
+    it 'notifies in a pipeline natively', (done) -> 
 
         pipeline = require 'when/pipeline'
         defer    = require('when').defer
@@ -56,14 +61,25 @@ describe 'defers', ->
                     d.notify 1
                     process.nextTick -> 
                         d.resolve()
-                
+                d.promise
+            ->
+                d = defer()
+                process.nextTick -> 
+                    d.notify 2
+                    process.nextTick -> 
+                        d.resolve()
                 d.promise
 
+            deferred ({resolve, notify}) -> 
+                process.nextTick -> 
+                    notify 3
+                    process.nextTick -> 
+                        resolve()
+
         ]).then(
-            -> console.log N
+            -> 
+                N.should.eql [1, 2, 3]
+                done()
             ->
             (n) -> N.push n 
         )
-
-    it 'is unexpected...'
-
