@@ -12,34 +12,25 @@ module.exports = root = (parent = module.parent) ->
     # 
 
 
-    #
-    # first match on root module's reversed paths array 
-    # that is a node_modules directory and is present is 
-    # the node_modules of the process ""home""
-    #
+    for path in parent.paths
 
-    paths  = parent.paths
-    length = paths.length
+        try
+            
+            if lstatSync( path ).isDirectory()
 
-    while path = paths[ --length ]
+                home = dirname path
 
-        if path.match /node_modules$/
+                return {
 
-            try 
+                    #
+                    # home - refers to the installed location 
+                    #        of the repo clone from where the
+                    #        process is running
+                    # 
+                    #        ( hopefully always... )
+                    # 
+                    #
 
-                if lstatSync( path ).isDirectory()
+                    home: home
 
-                    return {
-
-                        #
-                        # home - refers to the installed location 
-                        #        of the repo clone from where the
-                        #        process is running
-                        # 
-                        #        ( hopefully always... )
-                        # 
-                        #
-
-                        home: dirname path
-
-                    }
+                }
