@@ -23,6 +23,7 @@ localExports = {
     schedule: {}
     match:    {}
     util:     {}
+    root:     {}
 
 }
 
