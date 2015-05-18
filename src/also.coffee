@@ -18,6 +18,7 @@ localExports = {
     sequence: {}
     pipeline: {}
     parallel: {}
+    When:     {}
 
     enclose:  {}
     schedule: {}
