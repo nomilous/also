@@ -20,6 +20,8 @@ module.exports = root = (parent = module.parent) ->
 
                 home = dirname path
 
+                # continue unless parent.filename.indexOf( home ) == 0
+
                 return {
 
                     #
